@@ -1,5 +1,11 @@
 # The Wildsea (Unofficial) - FoundryVTT
 
+## v0.4.0
+
+- FoundryVTT v14 support
+- Fix adding Tracks from journal entries
+- Scene Tracks: left click marks, right click clears
+
 ## v0.2.1
 
 - Fix expanding dice tooltips

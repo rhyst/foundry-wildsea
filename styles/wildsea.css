@@ -1865,6 +1865,7 @@ h3 + .wildsea-section-body {
   display: flex;
   flex-direction: row-reverse;
   height: 2rem;
+  margin-top: 0.5rem;
 }
 
 .track-panel .options button {
@@ -1944,6 +1945,12 @@ h3 + .wildsea-section-body {
     transparent calc(50% + 1px),
     transparent 100%
   );
+}
+
+.track-panel .wildsea-track-slots {
+  height: auto;
+  padding: 0.5rem 0;
+  margin: -0.5rem 0;
 }
 
 .wildsea-track-slot {

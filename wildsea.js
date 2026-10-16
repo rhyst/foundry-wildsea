@@ -29,7 +29,6 @@ Hooks.once('init', () => {
     WILDSEA.shipRatings.push('depth')
 
   CONFIG.wildsea = WILDSEA
-  CONFIG.ActiveEffect.legacyTransferral = false
   game.wildsea = {}
 
   WildseaTracks.setup()
@@ -44,7 +43,7 @@ Hooks.once('init', () => {
   const { Actors, Items, Journal } = foundry.documents.collections
   const ActorSheet = foundry.appv1.sheets.ActorSheet
   const ItemSheet = foundry.appv1.sheets.ItemSheet
-  const JournalSheet = foundry.appv1.sheets.JournalSheet
+  const { JournalEntrySheet } = foundry.applications.sheets.journal
 
   Actors.unregisterSheet('core', ActorSheet)
   Actors.registerSheet('wildsea', WildseaPlayerSheet, { types: ['player'] })
@@ -63,10 +62,8 @@ Hooks.once('init', () => {
     types: ['attribute'],
   })
 
-  Journal.unregisterSheet('core', JournalSheet)
+  Journal.unregisterSheet('core', JournalEntrySheet)
   Journal.registerSheet('wildsea', WildseaJournalSheet)
-
-  CONFIG.TinyMCE.content_css = `${WILDSEA.root_path}/styles/tinymce.css`
 })
 
 Hooks.once('ready', () => {
@@ -77,9 +74,10 @@ Hooks.on('ready', async () => {
   game.wildsea.dicePool = new WildseaDicePool()
 })
 
-Hooks.on('renderJournalPageSheet', (_obj, html) => {
-  const container = html instanceof HTMLElement ? html : html[0]
-  if (game.user.isGM) {
+Hooks.on('renderJournalEntryPageSheet', (_sheet, container) => {
+  // Page sheet elements persist across renders
+  if (game.user.isGM && !container.dataset.wildseaTracks) {
+    container.dataset.wildseaTracks = 'true'
     container.addEventListener('click', async (event) => {
       const trackEl = event.target.closest('.wildsea-track')
       if (!trackEl) return

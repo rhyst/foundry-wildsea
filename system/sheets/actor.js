@@ -60,27 +60,27 @@ export default class WildseaActorSheet extends HandlebarsApplicationMixin(foundr
 
   itemContextMenu = [
     {
-      name: game.i18n.localize('wildsea.toChat'),
+      label: game.i18n.localize('wildsea.toChat'),
       icon: '<i class="fas fa-comment"></i>',
-      callback: (element) => {
+      onClick: (_event, element) => {
         const el = element
         const itemId = el.closest('.item').dataset.itemId
         this.sendItemToChat(itemId)
       },
     },
     {
-      name: game.i18n.localize('wildsea.edit'),
+      label: game.i18n.localize('wildsea.edit'),
       icon: '<i class="fas fa-edit"></i>',
-      callback: (element) => {
+      onClick: (_event, element) => {
         const el = element
         const itemId = el.closest('.item').dataset.itemId
         this.actor.items.get(itemId).sheet.render({ force: true })
       },
     },
     {
-      name: game.i18n.localize('wildsea.delete'),
+      label: game.i18n.localize('wildsea.delete'),
       icon: '<i class="fas fa-trash"></i>',
-      callback: (element) => {
+      onClick: (_event, element) => {
         const el = element
         const itemId = el.closest('.item').dataset.itemId
         this.actor.deleteEmbeddedDocuments('Item', [itemId])
@@ -90,9 +90,9 @@ export default class WildseaActorSheet extends HandlebarsApplicationMixin(foundr
 
   slimContextMenu = [
     {
-      name: game.i18n.localize('wildsea.toChat'),
+      label: game.i18n.localize('wildsea.toChat'),
       icon: '<i class="fas fa-comment"></i>',
-      callback: (element) => {
+      onClick: (_event, element) => {
         const el = element
         const itemId = el.dataset.itemId
         const itemType = el.dataset.itemType
@@ -100,9 +100,9 @@ export default class WildseaActorSheet extends HandlebarsApplicationMixin(foundr
       },
     },
     {
-      name: game.i18n.localize('wildsea.edit'),
+      label: game.i18n.localize('wildsea.edit'),
       icon: '<i class="fas fa-edit"></i>',
-      callback: (element) => {
+      onClick: (_event, element) => {
         const el = element
         const itemId = el.dataset.itemId
         const itemType = el.dataset.itemType
@@ -110,9 +110,9 @@ export default class WildseaActorSheet extends HandlebarsApplicationMixin(foundr
       },
     },
     {
-      name: game.i18n.localize('wildsea.delete'),
+      label: game.i18n.localize('wildsea.delete'),
       icon: '<i class="fas fa-trash"></i>',
-      callback: (element) => {
+      onClick: (_event, element) => {
         const el = element
         const itemId = el.dataset.itemId
         const itemType = el.dataset.itemType

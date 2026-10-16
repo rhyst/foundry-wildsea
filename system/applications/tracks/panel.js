@@ -54,6 +54,13 @@ export class WildseaTrackPanel extends HandlebarsApplicationMixin(foundry.applic
 
     if (!game.user.isGM) return
 
+    for (const el of this.element.querySelectorAll('[data-action="adjustTrack"]')) {
+      el.addEventListener('contextmenu', (event) => {
+        event.preventDefault()
+        this._onAdjustTrack(event, el, -1)
+      })
+    }
+
     // SortableJS for reordering tracks
     const trackList = this.element.querySelector('.track-list')
     if (trackList) {
@@ -90,8 +97,8 @@ export class WildseaTrackPanel extends HandlebarsApplicationMixin(foundry.applic
         return this._onEditTrack(target)
       case 'deleteTrack':
         return this._onDeleteTrack(target)
-      case 'toggleTrackSlot':
-        return this._onToggleTrackSlot(event, target)
+      case 'adjustTrack':
+        return this._onAdjustTrack(event, target, 1)
       default:
         return super._onClickAction(event, target)
     }
@@ -137,17 +144,12 @@ export class WildseaTrackPanel extends HandlebarsApplicationMixin(foundry.applic
     this.db.deleteTrack(id)
   }
 
-  _onToggleTrackSlot(event, target) {
+  _onAdjustTrack(event, target, amount) {
     if (!game.user.isGM) return
 
     const id = target.closest('.wildsea-track-row')?.dataset.trackId
     if (!id) return
 
-    const slotState = target.dataset.slotState ?? 'empty'
-    const filledSlot = slotState !== 'empty'
-    const burnAction =
-      slotState === 'burned' || (!filledSlot && clickModifiers(event))
-
-    this.db.markTrack(id, burnAction, filledSlot ? -1 : 1)
+    this.db.markTrack(id, clickModifiers(event), amount)
   }
 }

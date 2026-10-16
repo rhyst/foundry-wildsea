@@ -1,6 +1,6 @@
 <div class="wildsea-track-row {{track.displayVisibility}}" data-track-id="{{track.id}}">
   <a class="wildsea-track-label" {{#if @root.options.editable}}data-action="editTrack"{{/if}} {{#if (ne track.visibility 'open')}}data-tooltip="{{localize (concat "wildsea.TRACKS." track.visibility)}}"{{/if}}>{{label}}</a>
-  <div class="wildsea-track-slots">
+  <div class="wildsea-track-slots" {{#if @root.options.editable}}data-action="adjustTrack"{{/if}}>
     {{#if (or @root.options.editable (eq track.visibility 'open'))}}
     {{{renderTrack track}}}
     {{/if}}

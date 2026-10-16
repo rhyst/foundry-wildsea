@@ -8,7 +8,7 @@ const createTextInput = ({ name, value = '', placeholder = '' }) => {
   const input = document.createElement('input')
   input.type = 'text'
   input.name = name
-  input.value = value
+  input.setAttribute('value', value)
   input.placeholder = placeholder
   return input
 }
@@ -156,6 +156,11 @@ export class WildseaTrackDatabase extends Collection {
       tracks[id].value += amount
     }
     tracks[id].value = clamp(tracks[id].value, tracks[id].max, tracks[id].burn)
+
+    // Redraw before the server round trip
+    this.set(id, tracks[id])
+    game.wildsea.trackPanel.render()
+
     game.settings.set('wildsea', 'activeTracks', tracks)
   }
 

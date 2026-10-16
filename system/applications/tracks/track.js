@@ -43,7 +43,7 @@ export default class WildseaTrack {
     const classes = ['wildsea-track-slot']
     if (state !== 'empty') classes.push(state)
 
-    return `<span class="${classes.join(' ')}" data-action="toggleTrackSlot" data-slot-index="${index}" data-slot-state="${state}"></span>`
+    return `<span class="${classes.join(' ')}" data-slot-index="${index}" data-slot-state="${state}"></span>`
   }
 
   emptySlot(index) {

@@ -22,11 +22,11 @@ const enrichTrack = async (match) => {
   const track = new WildseaTrack({ label: trackLabel, groups })
   const container = document.createElement('span')
   container.className = 'wildsea-track'
-  foundry.utils.mergeObject(container.dataset, { label: trackLabel, groups })
+  container.dataset.label = trackLabel
+  container.dataset.groups = groups
 
   if (game.user.isGM) {
-    const tooltip = game.i18n.localize('wildsea.track_tooltip')
-    foundry.utils.mergeObject(container.dataset, { tooltip })
+    container.dataset.tooltip = game.i18n.localize('wildsea.track_tooltip')
   }
 
   container.innerHTML = `<a class="wildsea-track-label">${trackLabel}</a> <span class="wildsea-track-slots">${track.render()}</span>`
