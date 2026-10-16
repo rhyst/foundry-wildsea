@@ -37,3 +37,11 @@ export const deleteAndReturn = (map, key) => {
 }
 
 export const clickModifiers = (event) => event.shiftKey || event.ctrlKey
+
+// change is positive to mark, negative to clear; burns also fill marks
+export const markTrack = ({ value, burn, max }, isBurn, change = 1) => {
+  if (!isBurn) return { value: clamp(value + change, max, burn), burn }
+
+  const newBurn = clamp(burn + change, max)
+  return { value: value <= burn ? newBurn : value, burn: newBurn }
+}

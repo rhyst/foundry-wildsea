@@ -16,6 +16,7 @@ import WildseaShipSheet from './system/sheets/ship.js'
 import WildseaShipItemSheet from './system/sheets/ship_item.js'
 import WildseaAdversarySheet from './system/sheets/adversary.js'
 import { setupEnrichers } from './system/enrichers.js'
+import { setupDamageButtons } from './system/damage.js'
 import { runMigrations } from './system/migrations.js'
 import { registerDataModels } from './system/data-models.js'
 
@@ -37,6 +38,7 @@ Hooks.once('init', () => {
   loadHandlebarsPartials()
   loadHandlebarsHelpers()
   setupEnrichers()
+  setupDamageButtons()
 
   registerDataModels()
   CONFIG.Actor.documentClass = WildseaActor

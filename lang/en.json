@@ -193,6 +193,18 @@
       "signalling": "Flags, flares, signal lamps (code).",
       "highvin": "Primarily written (pre-verdant ruins)."
     },
+    "DAMAGE": {
+      "trackButton": "Damage",
+      "shipButton": "Ship Damage",
+      "track": "Track",
+      "ship": "Ship",
+      "amount": "Amount",
+      "burn": "Burn",
+      "noTracks": "{actor} has no tracks to mark",
+      "noShips": "There are no ships to damage",
+      "marked": "Marked {amount} on {target}",
+      "burned": "Burned {amount} on {target}"
+    },
     "TRACKS": {
       "addTrack": "Add Track",
       "editTrack": "Edit Track",

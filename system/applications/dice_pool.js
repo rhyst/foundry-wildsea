@@ -252,6 +252,9 @@ export default class WildseaDicePool extends HandlebarsApplicationMixin(foundry.
       ),
       rolls: [roll],
       sound: CONFIG.sounds.dice,
+      flags: {
+        wildsea: { outcome: outcome.resultText, actor: this.actor.uuid },
+      },
     }
     ChatMessage.create(chatData)
   }

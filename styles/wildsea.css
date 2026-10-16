@@ -1175,6 +1175,16 @@ h3 + .wildsea-section-body {
   margin-bottom: 0.25rem;
 }
 
+.wildsea-damage-buttons {
+  margin-top: 0.5rem;
+}
+
+.wildsea-damage-buttons button {
+  color: var(--wildsea-text);
+  background: var(--wildsea-surface-alt);
+  border-color: var(--wildsea-border);
+}
+
 .dice-tooltip .dice-rolls .roll.cut {
   opacity: 0.7;
   color: #bb434e;

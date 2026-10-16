@@ -1,5 +1,5 @@
 import { WILDSEA } from '../config.js'
-import { clamp, clickModifiers } from '../helpers.js'
+import { clamp, clickModifiers, markTrack } from '../helpers.js'
 import { renderDialog } from '../dialog.js'
 import SortableJS from '../lib/sortable.complete.esm.js'
 
@@ -289,31 +289,9 @@ export default class WildseaActorSheet extends HandlebarsApplicationMixin(foundr
 
   // updateValue is positive for add, negative for subtract.
   async itemTrackUpdate(item, isBurn, updateValue = 1) {
-    const marks = item.system.track.value
-    const burns = item.system.track.burn
-    const max = item.system.track.max
-
-    let update = {
-      system: {
-        track: {
-          value: marks,
-          burn: burns,
-        },
-      },
-    }
-
-    if (isBurn) {
-      const newBurn = clamp(burns + updateValue, max)
-
-      update.system.track.burn = newBurn
-      if (marks <= burns) {
-        update.system.track.value = newBurn
-      }
-    } else {
-      const newValue = clamp(marks + updateValue, max, burns)
-      update.system.track.value = newValue
-    }
-    item.update({ ...update })
+    item.update({
+      system: { track: markTrack(item.system.track, isBurn, updateValue) },
+    })
   }
 
   static _onCollapseItem(event, target) {

@@ -1,6 +1,6 @@
 import { WILDSEA } from '../config.js'
 import { renderDialog } from '../dialog.js'
-import { clamp, clickModifiers, enrich } from '../helpers.js'
+import { clamp, clickModifiers, enrich, markTrack } from '../helpers.js'
 import WildseaActorSheet from './actor.js'
 import * as Dice from '../dice.js'
 
@@ -97,33 +97,14 @@ export default class WildseaShipSheet extends WildseaActorSheet {
   }
 
   async adjustRating(rating, change = 1, isBurn) {
-    const ratingMax = this.actor.system.ratings[rating]?.max || 6
-    const marks = this.actor.system.ratings[rating]?.value
-    const burns = this.actor.system.ratings[rating]?.burn
-
-    let update = {
+    const { value, burn, max } = this.actor.system.ratings[rating]
+    this.actor.update({
       system: {
         ratings: {
-          [rating]: {
-            value: marks,
-            burn: burns,
-          },
+          [rating]: markTrack({ value, burn, max: max || 6 }, isBurn, change),
         },
       },
-    }
-
-    if (isBurn) {
-      const newBurn = clamp(burns + change, ratingMax)
-      update.system.ratings[rating].burn = newBurn
-      if (marks <= burns) {
-        update.system.ratings[rating].value = newBurn
-      }
-    } else {
-      const newValue = clamp(marks + change, ratingMax, burns)
-      update.system.ratings[rating].value = newValue
-    }
-
-    this.actor.update({ ...update })
+    })
   }
 
   static _onAddItem(event, target) {
@@ -230,6 +211,9 @@ export default class WildseaShipSheet extends WildseaActorSheet {
       ),
       rolls: [roll],
       sound: CONFIG.sounds.dice,
+      flags: {
+        wildsea: { outcome: outcome.resultText, actor: this.actor.uuid },
+      },
     }
     ChatMessage.create(chatData)
   }
