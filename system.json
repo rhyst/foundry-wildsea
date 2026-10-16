@@ -19,10 +19,10 @@
       "discord": "Mutex"
     }
   ],
-  "version": "0.4.0",
+  "version": "0.4.1",
   "url": "https://github.com/rhyst/wildsea-foundry",
   "manifest": "https://github.com/rhyst/wildsea-foundry/releases/latest/download/system.json",
-  "download": "https://github.com/rhyst/wildsea-foundry/releases/download/v0.4.0/wildsea-foundry-v0.4.0.zip",
+  "download": "https://github.com/rhyst/wildsea-foundry/releases/download/v0.4.1/wildsea-foundry-v0.4.1.zip",
 
   "compatibility": {
     "minimum": "14",

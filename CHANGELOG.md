@@ -1,5 +1,11 @@
 # The Wildsea (Unofficial) - FoundryVTT
 
+## v0.4.1
+
+- Use system data models in place of template.json
+- Fix item context menus on aspects, temporary tracks and designs
+- Fix chat card colours in dark mode
+
 ## v0.4.0
 
 - FoundryVTT v14 support
