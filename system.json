@@ -35,6 +35,22 @@
       "thumbnail": "systems/the-wildsea/assets/setup.webp"
     }
   ],
+  "documentTypes": {
+    "Actor": {
+      "player": {},
+      "ship": {},
+      "hazard": { "htmlFields": ["description"] }
+    },
+    "Item": {
+      "aspect": { "htmlFields": ["details"] },
+      "attribute": { "htmlFields": ["details"] },
+      "design": { "htmlFields": ["details"] },
+      "fitting": { "htmlFields": ["details"] },
+      "resource": { "htmlFields": ["details"] },
+      "temporaryTrack": { "htmlFields": ["details"] },
+      "undercrew": { "htmlFields": ["details"] }
+    }
+  },
   "esmodules": ["wildsea.js"],
   "styles": ["styles/wildsea.css"],
   "packs": [

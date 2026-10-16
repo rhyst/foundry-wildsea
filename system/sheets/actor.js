@@ -36,15 +36,22 @@ export default class WildseaActorSheet extends HandlebarsApplicationMixin(foundr
     return context
   }
 
-  _onRender(context, options) {
-    super._onRender(context, options)
+  _onFirstRender(context, options) {
+    super._onFirstRender(context, options)
 
     if (!this.isEditable || !this.actor.isOwner) return
 
     // Item context menus
     const ContextMenu = foundry.applications.ux.ContextMenu.implementation
-    new ContextMenu(this.element, '.itemContextMenu', this.itemContextMenu, { jQuery: false })
-    new ContextMenu(this.element, '.slimContextMenu', this.slimContextMenu, { jQuery: false })
+    const menuOptions = { jQuery: false, fixed: true }
+    new ContextMenu(this.element, '.itemContextMenu', this.itemContextMenu, menuOptions)
+    new ContextMenu(this.element, '.slimContextMenu', this.slimContextMenu, menuOptions)
+  }
+
+  _onRender(context, options) {
+    super._onRender(context, options)
+
+    if (!this.isEditable || !this.actor.isOwner) return
 
     // Item tracks - click to increase, right-click to reduce
     for (const el of this.element.querySelectorAll('.item .wildsea-track')) {

@@ -44,7 +44,7 @@ jobs:
           ZIP_NAME="wildsea-foundry-${GITHUB_REF_NAME}.zip"
           zip "${ZIP_NAME}" -r \
             assets lang styles/*.css styles/fonts packs system templates \
-            CHANGELOG.md LICENSE README.md system.json template.json wildsea.js
+            CHANGELOG.md LICENSE README.md system.json wildsea.js
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

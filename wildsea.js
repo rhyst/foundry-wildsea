@@ -17,6 +17,7 @@ import WildseaShipItemSheet from './system/sheets/ship_item.js'
 import WildseaAdversarySheet from './system/sheets/adversary.js'
 import { setupEnrichers } from './system/enrichers.js'
 import { runMigrations } from './system/migrations.js'
+import { registerDataModels } from './system/data-models.js'
 
 import * as WildseaTracks from './system/applications/tracks/index.js'
 
@@ -37,6 +38,7 @@ Hooks.once('init', () => {
   loadHandlebarsHelpers()
   setupEnrichers()
 
+  registerDataModels()
   CONFIG.Actor.documentClass = WildseaActor
   CONFIG.Item.documentClass = WildseaItem
 

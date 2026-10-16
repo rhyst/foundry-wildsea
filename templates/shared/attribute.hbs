@@ -1,7 +1,7 @@
 {{!-- Because adversaries dont have tracks, this is just a simpler version of an aspect, then i borrow the styling. --}}
 <div class="attribute wildsea-aspect-card item" data-item-id="{{id}}">
-  <h3 class="wildsea-aspect-title wildsea-bg-light wildsea-drag-handle">
-    <span class="itemContextMenu">{{name}}</span>
+  <h3 class="wildsea-aspect-title wildsea-bg-light wildsea-drag-handle itemContextMenu">
+    <span>{{name}}</span>
   </h3>
   <div class="wildsea-detail-drawer {{#if system.collapsed}}hidden{{/if}}">
     {{{system.enrichedDetails}}}

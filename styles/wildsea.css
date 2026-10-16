@@ -119,7 +119,8 @@ a.inline-roll.unstyled {
 
 /* ---------- Theme variables (light) ---------- */
 
-.wildsea {
+.wildsea,
+.chat-message {
   --wildsea-surface: #f9f9f9;
   --wildsea-surface-alt: #e2e2df;
   --wildsea-surface-strong: #858778;
@@ -134,7 +135,8 @@ a.inline-roll.unstyled {
 
 /* ---------- Dark theme ---------- */
 
-body.theme-dark .wildsea {
+body.theme-dark .wildsea,
+body.theme-dark .chat-message {
   --wildsea-surface: #15181d;
   --wildsea-surface-alt: #252830;
   --wildsea-surface-strong: #8f8a74;
@@ -570,6 +572,7 @@ body.theme-dark .wildsea ul.wildsea-track li {
 .wildsea h2,
 .wildsea h3,
 .wildsea h4 {
+  color: inherit;
   font-family: "Teko", sans-serif;
   text-transform: uppercase;
   border-bottom: none;
@@ -1100,7 +1103,7 @@ h3 + .wildsea-section-body {
    ========================================================================== */
 
 .chat-message {
-  background: #f9f9f9;
+  background: var(--wildsea-surface);
 }
 
 .chat-message .message-header {
@@ -1149,7 +1152,7 @@ h3 + .wildsea-section-body {
 }
 
 .chat-message.whisper {
-  background: #e2e2df;
+  background: var(--wildsea-surface-alt);
 }
 
 .chat-message.whisper .message-header .message-sender {
@@ -1166,7 +1169,7 @@ h3 + .wildsea-section-body {
     calc(100% - 1.5rem) 100%,
     0 100%
   );
-  background: #e2e2df;
+  background: var(--wildsea-surface-alt);
   border: none;
   box-shadow: none;
   margin-bottom: 0.25rem;
