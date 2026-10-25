@@ -2057,6 +2057,12 @@ h3 + .wildsea-section-body {
   transform: translate(-50%, calc(-100% - 0.4rem));
 }
 
+.wildsea-hud-marker.wildsea-ladder-marker {
+  padding: 0.5rem;
+  font-size: 2rem;
+  border-radius: 50%;
+}
+
 .wildsea-hud-marker.wildsea-station-label {
   gap: 0;
   padding: 0.2rem 0.6rem;

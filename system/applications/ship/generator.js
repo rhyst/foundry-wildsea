@@ -1,4 +1,4 @@
-import { SCOPE } from './schematic.js'
+import { SCOPE, placePart, placements } from './schematic.js'
 
 const { DialogV2 } = foundry.applications.api
 const { createFormGroup, createSelectInput } = foundry.applications.fields
@@ -75,11 +75,18 @@ const seededRandom = (seed) => {
   }
 }
 
-const MAST_COUNTS = { short: 1, medium: 2, long: 3 }
-const WEAPON_TYPES = /weapon|armament/i
+export const MAX_DECKS = 4
+const DECK_HEIGHT = 10
+// Where the ladder between decks sits, as a fraction of the hull's length
+const LADDER_T = 0.62
 
 const spread = (count, from, to) =>
   Array.from({ length: count }, (_, i) => from + ((to - from) * (i + 0.5)) / count)
+
+const ladderPoint = ({ halfBeam, x }) => ({
+  x: x(LADDER_T),
+  y: halfBeam(LADDER_T) * 0.45,
+})
 
 const planking = ({ B, halfBeam, x }, random) => {
   const lines = []
@@ -93,20 +100,9 @@ const planking = ({ B, halfBeam, x }, random) => {
   return lines.join('')
 }
 
-const masts = ({ B, halfBeam, x }, count) =>
-  spread(count, 0.3, 0.7)
-    .map((t) => {
-      const yard = halfBeam(t) * 0.8
-      return `<line x1="${x(t)}" y1="${-yard}" x2="${x(t)}" y2="${yard}" stroke-width="12" />
-      <circle cx="${x(t)}" cy="0" r="${B * 0.05}" stroke-width="6" />
-      <circle cx="${x(t)}" cy="0" r="${B * 0.02}" stroke-width="4" />`
-    })
-    .join('')
-
-const hatches = ({ B, x }, random, mastCount) => {
-  const avoid = spread(mastCount, 0.3, 0.7)
-  return spread(4, 0.15, 0.85)
-    .filter((t) => avoid.every((m) => Math.abs(m - t) > 0.08))
+const hatches = ({ B, x }, random) =>
+  spread(4, 0.15, 0.85)
+    .filter((t) => Math.abs(t - LADDER_T) > 0.08)
     .filter(() => random() > 0.3)
     .map((t) => {
       const s = B * 0.07
@@ -115,27 +111,10 @@ const hatches = ({ B, x }, random, mastCount) => {
       <path d="M ${x(t) - s / 2} ${y - s / 2} L ${x(t) + s / 2} ${y + s / 2} M ${x(t) + s / 2} ${y - s / 2} L ${x(t) - s / 2} ${y + s / 2}" />`
     })
     .join('')
-}
-
-const gunports = ({ halfBeam, x }, count) =>
-  spread(count, 0.3, 0.75)
-    .flatMap((t) =>
-      [-1, 1].map((side) => {
-        const y = side * halfBeam(t)
-        return `<rect x="${x(t) - 25}" y="${y - 15}" width="50" height="30" />`
-      }),
-    )
-    .join('')
 
 const prow = ({ L, B, x }) => {
   const tip = x(1) + L * 0.05
   return `<path d="M ${x(1) - L * 0.03} ${-B * 0.05} L ${tip} 0 L ${x(1) - L * 0.03} ${B * 0.05} Z" />`
-}
-
-const engine = ({ L, B, halfBeam, x }) => {
-  const w = Math.max(halfBeam(0.08), B * 0.08)
-  return `<rect x="${x(0.04)}" y="${-w * 0.6}" width="${L * 0.08}" height="${w * 1.2}" />
-    <path d="M ${x(0.06)} ${-w * 0.6} V ${w * 0.6} M ${x(0.08)} ${-w * 0.6} V ${w * 0.6} M ${x(0.1)} ${-w * 0.6} V ${w * 0.6}" />`
 }
 
 const rudder = ({ L, x }) =>
@@ -168,16 +147,14 @@ const compass = (cx, cy, r) =>
     <text y="${-r - 20}" text-anchor="middle" font-size="50" stroke="none">N</text>
   </g>`
 
-export const buildSchematicSvg = (ship, options) => {
+// One deck's plan: deck 0 is the main deck
+export const buildSchematicSvg = (ship, options, deck = 0) => {
   const { width, height } = SCENE
+  const main = deck === 0
   const colours = PALETTES[options.palette]
   const geometry = hullGeometry(options)
-  const { L, B, halfBeam, x } = geometry
-  const random = seededRandom(ship.id ?? ship.name)
-  const mastCount = MAST_COUNTS[options.length]
-  const weapons = ship.itemTypes.fitting?.filter((fitting) =>
-    WEAPON_TYPES.test(fitting.system.type),
-  ).length ?? 0
+  const { halfBeam, x } = geometry
+  const random = seededRandom(`${ship.id ?? ship.name}-${deck}`)
 
   const ribs = spread(12, 0, 1)
     .map((t) => {
@@ -185,7 +162,6 @@ export const buildSchematicSvg = (ship, options) => {
       return `<line x1="${x(t)}" y1="${-h}" x2="${x(t)}" y2="${h}" />`
     })
     .join('')
-
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
   <defs>
@@ -196,9 +172,9 @@ export const buildSchematicSvg = (ship, options) => {
       <path d="M 500 0 H 0 V 500" fill="none" stroke="${colours.grid}" stroke-width="5" />
     </pattern>
     <linearGradient id="hullShade" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="${colours.ink}" stop-opacity="0.15" />
-      <stop offset="0.5" stop-color="${colours.ink}" stop-opacity="0" />
-      <stop offset="1" stop-color="${colours.ink}" stop-opacity="0.15" />
+      <stop offset="0" stop-color="${colours.ink}" stop-opacity="${main ? 0.15 : 0.25}" />
+      <stop offset="0.5" stop-color="${colours.ink}" stop-opacity="${main ? 0 : 0.08}" />
+      <stop offset="1" stop-color="${colours.ink}" stop-opacity="${main ? 0.15 : 0.25}" />
     </linearGradient>
     <clipPath id="hullClip"><path d="${outline(geometry)}" /></clipPath>
     <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
@@ -214,30 +190,27 @@ export const buildSchematicSvg = (ship, options) => {
   <rect width="${width}" height="${height}" fill="url(#gridMajor)" />
   <rect width="${width}" height="${height}" filter="url(#grain)" />
   <g transform="translate(${width / 2} ${height / 2})" stroke="${colours.ink}" fill="none">
-    <g stroke-width="3" opacity="0.4" stroke-dasharray="20 15">${wake(geometry)}</g>
-    <g fill="${colours.hull}" stroke-width="6">${prow(geometry)}</g>
+    ${main ? `<g stroke-width="3" opacity="0.4" stroke-dasharray="20 15">${wake(geometry)}</g>` : ''}
+    ${main ? `<g fill="${colours.hull}" stroke-width="6">${prow(geometry)}</g>` : ''}
     <path d="${outline(geometry)}" fill="${colours.hull}" />
     <path d="${outline(geometry)}" fill="url(#hullShade)" />
     <g clip-path="url(#hullClip)">
-      <g stroke-width="2" opacity="0.25">${planking(geometry, random)}</g>
+      <g stroke-width="2" opacity="${main ? 0.25 : 0.15}">${planking(geometry, random)}</g>
       <g stroke-width="3" opacity="0.45">${ribs}</g>
-      <g fill="${colours.hull}" stroke-width="4">${engine(geometry)}</g>
     </g>
     <path d="${outline(geometry, 0.92)}" stroke-width="4" />
     <line x1="${x(0)}" y1="0" x2="${x(1)}" y2="0" stroke-width="3" stroke-dasharray="60 30" opacity="0.5" />
-    <g fill="${colours.hull}" stroke-width="4">${hatches(geometry, random, mastCount)}</g>
-    <g fill="${colours.hull}" stroke-width="4">${rudder(geometry)}</g>
-    <g fill="${colours.ground}" stroke-width="4">${gunports(geometry, weapons)}</g>
-    <g fill="${colours.hull}">${masts(geometry, mastCount)}</g>
+    ${main ? `<g fill="${colours.hull}" stroke-width="4">${hatches(geometry, random)}</g>` : ''}
+    ${main ? `<g fill="${colours.hull}" stroke-width="4">${rudder(geometry)}</g>` : ''}
     <path d="${outline(geometry)}" stroke-width="12" />
-    <g stroke-width="3" opacity="0.7">${dimensions(geometry)}</g>
+    ${main ? `<g stroke-width="3" opacity="0.7">${dimensions(geometry)}</g>` : ''}
   </g>
   <g stroke="${colours.ink}" fill="${colours.ink}" opacity="0.8">${compass(260, 300, 140)}</g>
 </svg>`
 }
 
 // Text kept as scene drawings so it can be edited, moved or deleted
-const textDrawings = (ship, options, origin) => {
+const textDrawings = (ship, options, origin, level) => {
   const { width, height } = SCENE
   const ink = PALETTES[options.palette].ink
   const specs = ['size', 'frame', 'hull']
@@ -248,6 +221,7 @@ const textDrawings = (ship, options, origin) => {
     shape: { type: 'r', width: w, height: h },
     x: origin.x + x,
     y: origin.y + y,
+    levels: [level],
     text: content,
     fontSize,
     textColor: ink,
@@ -271,14 +245,23 @@ const uploadSvg = async (svg, name) => {
   return result?.path
 }
 
+// The scene's decks in order from the main deck down; an ungenerated scene's level is its main deck
+export const deckLevels = (scene) => {
+  const decks = scene.levels
+    .filter((level) => Number.isInteger(level.getFlag(SCOPE, 'deck')))
+    .sort((a, b) => a.getFlag(SCOPE, 'deck') - b.getFlag(SCOPE, 'deck'))
+  if (decks.length) return decks
+  return [scene.initialLevel ?? scene.levels.contents[0]].filter(Boolean)
+}
+
 const options = (values, labelPrefix) =>
   Object.keys(values).map((value) => ({
     value,
     label: `${labelPrefix}.${value}`,
   }))
 
-const promptOptions = (ship) => {
-  const defaults = defaultsFor(ship)
+const promptOptions = (ship, scene) => {
+  const defaults = { ...defaultsFor(ship), decks: String(deckLevels(scene).length || 1) }
   const select = (name, values) =>
     createFormGroup({
       label: game.i18n.localize(`wildsea.GENERATOR.${name}`),
@@ -295,40 +278,145 @@ const promptOptions = (ship) => {
       select('hull', HULLS),
       select('length', LENGTHS),
       select('beam', BEAMS),
+      createFormGroup({
+        label: game.i18n.localize('wildsea.GENERATOR.decks'),
+        input: createSelectInput({
+          name: 'decks',
+          value: defaults.decks,
+          options: Array.from({ length: MAX_DECKS }, (_, i) => ({
+            value: String(i + 1),
+            label: String(i + 1),
+          })),
+        }),
+      }).outerHTML,
       select('palette', PALETTES),
     ].join(''),
     rejectClose: false,
   })
 }
 
-export const generateSchematic = async (ship, scene) => {
-  const choices = await promptOptions(ship)
-  if (!choices) return
+const onlyOn = (levels, removed) =>
+  levels.size > 0 && [...levels].every((id) => removed.has(id))
 
-  const path = await uploadSvg(
-    buildSchematicSvg(ship, choices),
-    `${ship.id}-${Date.now()}.svg`,
+// Confirms losing everything that exists only on the decks being removed
+const confirmRemoval = (ship, scene, removedLevels, decks) => {
+  const removed = new Set(removedLevels.map((level) => level.id))
+  const count = (collection) =>
+    collection.filter((doc) => onlyOn(doc.levels, removed)).length
+  const cards = Object.values(placements(ship)).filter(
+    (placement) => placement.scene === scene.id && removed.has(placement.level),
+  ).length
+  return DialogV2.confirm({
+    window: { title: game.i18n.localize('wildsea.GENERATOR.removeDecksTitle') },
+    content: `<p>${game.i18n.format('wildsea.GENERATOR.removeDecks', {
+      decks,
+      levels: removedLevels.map((level) => level.name).join(', '),
+      tokens: scene.tokens.filter((token) => removed.has(token.level)).length,
+      regions: count(scene.regions),
+      drawings: count(scene.drawings),
+      cards,
+    })}</p>`,
+    rejectClose: false,
+  })
+}
+
+const deckName = (deck) => game.i18n.localize(`wildsea.GENERATOR.DECK_NAMES.${deck}`)
+
+// The main deck is open above and the lowest open below
+const deckElevation = (deck, decks) => ({
+  bottom: deck === decks - 1 ? null : -deck * DECK_HEIGHT,
+  top: deck === 0 ? null : -(deck - 1) * DECK_HEIGHT,
+})
+
+const syncDecks = async (scene, decks, paths) => {
+  const existing = deckLevels(scene)
+  const data = paths.map((src, deck) => ({
+    name: deckName(deck),
+    elevation: deckElevation(deck, decks),
+    background: { src },
+    flags: { [SCOPE]: { deck } },
+  }))
+  await scene.updateEmbeddedDocuments(
+    'Level',
+    existing.slice(0, decks).map((level, deck) => ({ _id: level.id, ...data[deck] })),
   )
-  if (!path) return
+  await scene.createEmbeddedDocuments('Level', data.slice(existing.length))
+  await scene.deleteEmbeddedDocuments(
+    'Level',
+    existing.slice(decks).map((level) => level.id),
+  )
+  const levels = deckLevels(scene)
+  await scene.update({ initialLevel: levels[0].id })
+  return levels
+}
+
+// One ladder region through every deck; core's Change Level behaviour moves tokens between them
+const syncLadder = async (ship, scene, options, levels, origin) => {
+  const previous = scene.regions
+    .filter((region) => region.getFlag(SCOPE, 'ladder'))
+    .map((region) => region.id)
+  await scene.deleteEmbeddedDocuments('Region', previous)
+  if (levels.length < 2) return
+
+  const { x, y } = ladderPoint(hullGeometry(options))
+  await scene.createEmbeddedDocuments('Region', [
+    {
+      name: game.i18n.localize('wildsea.GENERATOR.ladder'),
+      color: '#c9a227',
+      levels: levels.map((level) => level.id),
+      // Its icon stands in for it, so the region itself only shows on the Regions layer
+      visibility: CONST.REGION_VISIBILITY.LAYER,
+      shapes: [
+        {
+          type: 'rectangle',
+          x: origin.x + SCENE.width / 2 + x - 50,
+          y: origin.y + SCENE.height / 2 + y - 90,
+          width: 100,
+          height: 180,
+        },
+      ],
+      behaviors: [{ type: 'changeLevel', name: game.i18n.localize('wildsea.GENERATOR.ladder') }],
+      flags: { [SCOPE]: { ship: ship.uuid, ladder: true } },
+    },
+  ])
+}
+
+export const generateSchematic = async (ship, scene) => {
+  const choices = await promptOptions(ship, scene)
+  if (!choices) return
+  const decks = Math.clamp(parseInt(choices.decks) || 1, 1, MAX_DECKS)
+
+  const removed = deckLevels(scene).slice(decks)
+  if (removed.length && !(await confirmRemoval(ship, scene, removed, decks))) return
+
+  const paths = []
+  for (let deck = 0; deck < decks; deck++) {
+    const path = await uploadSvg(
+      buildSchematicSvg(ship, { ...choices, decks }, deck),
+      `${ship.id}-${Date.now()}-${deck}.svg`,
+    )
+    if (!path) return
+    paths.push(path)
+  }
+
+  // Cards placed on removed decks go with them
+  const removedIds = new Set(removed.map((level) => level.id))
+  for (const [key, placement] of Object.entries(placements(ship)))
+    if (placement.scene === scene.id && removedIds.has(placement.level))
+      await placePart(ship, key, null)
 
   await scene.update({ ...SCENE, padding: 0.1 })
-  const level = scene.levels.contents[0]
-  if (level)
-    await scene.updateEmbeddedDocuments('Level', [
-      { _id: level.id, background: { src: path } },
-    ])
-  else
-    await scene.createEmbeddedDocuments('Level', [
-      { name: ship.name, background: { src: path } },
-    ])
-
+  const levels = await syncDecks(scene, decks, paths)
   const { sceneX, sceneY } = scene.dimensions
+  const origin = { x: sceneX, y: sceneY }
+
   const previous = scene.drawings
     .filter((drawing) => drawing.getFlag(SCOPE, 'generated'))
     .map((drawing) => drawing.id)
   await scene.deleteEmbeddedDocuments('Drawing', previous)
   await scene.createEmbeddedDocuments(
     'Drawing',
-    textDrawings(ship, choices, { x: sceneX, y: sceneY }),
+    textDrawings(ship, choices, origin, levels[0].id),
   )
+  await syncLadder(ship, scene, choices, levels, origin)
 }

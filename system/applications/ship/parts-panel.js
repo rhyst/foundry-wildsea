@@ -129,14 +129,18 @@ export class WildseaShipPartsPanel extends HandlebarsApplicationMixin(
     if (!scene) return
     // Centre of the current view when on the ship's scene, otherwise the scene's centre
     const { sceneX, sceneY, sceneWidth, sceneHeight } = scene.dimensions
-    const position =
-      canvas.scene === scene
-        ? canvas.stage.pivot
-        : { x: sceneX + sceneWidth / 2, y: sceneY + sceneHeight / 2 }
-    await addStation(this.ship, scene, { label: data.label.trim(), role: data.role }, {
-      x: Math.round(position.x),
-      y: Math.round(position.y),
-    })
+    const viewing = canvas.scene === scene
+    const position = viewing
+      ? canvas.stage.pivot
+      : { x: sceneX + sceneWidth / 2, y: sceneY + sceneHeight / 2 }
+    const level = viewing ? canvas.level?.id : scene.initialLevel?.id
+    await addStation(
+      this.ship,
+      scene,
+      { label: data.label.trim(), role: data.role },
+      { x: Math.round(position.x), y: Math.round(position.y) },
+      level ? [level] : [],
+    )
   }
 
   static async _onDeleteStation(_event, target) {
@@ -149,8 +153,12 @@ export class WildseaShipPartsPanel extends HandlebarsApplicationMixin(
     return shipParts(this.ship).find((part) => part.key === key)
   }
 
-  static _onLocatePart(_event, target) {
+  // Switches to the part's deck first when it is on another one
+  static async _onLocatePart(_event, target) {
     const position = partPosition(this.ship, this.partFor(target))
-    if (position) canvas.animatePan({ x: position.x, y: position.y })
+    if (!position) return
+    if (position.level && position.level !== canvas.level?.id)
+      await canvas.scene.view({ level: position.level })
+    canvas.animatePan({ x: position.x, y: position.y })
   }
 }

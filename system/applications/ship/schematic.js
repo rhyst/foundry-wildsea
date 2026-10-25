@@ -84,16 +84,26 @@ export const placePart = (ship, key, placement) =>
     ? ship.setFlag(SCOPE, `schematic.${key}`, placement)
     : ship.unsetFlag(SCOPE, `schematic.${key}`)
 
-// Where a part sits on a scene: its region's centre, or its card placement
+// Cards placed before decks existed belong to the main deck
+const placementLevel = (placement, scene) =>
+  placement.level ?? scene.initialLevel?.id
+
+const onViewedLevel = (levelId) => !canvas.level || levelId === canvas.level.id
+
+// Where a part sits on a scene and which deck it is on: its region's centre, or its card placement
 export const partPosition = (ship, part, scene = canvas.scene) => {
   if (part.region) {
     if (part.region.parent !== scene) return null
     const { x, y, width, height } = part.region.bounds
-    return { x: x + width / 2, y: y + height / 2 }
+    const level = [...part.region.levels][0] ?? scene.initialLevel?.id
+    return { x: x + width / 2, y: y + height / 2, level }
   }
   const placement = placements(ship)[part.key]
-  return placement?.scene === scene?.id ? placement : null
+  if (placement?.scene !== scene?.id) return null
+  return { ...placement, level: placementLevel(placement, scene) }
 }
+
+const viewedLevels = () => (canvas.level ? [canvas.level.id] : [])
 
 const createRegion = (scene, data) =>
   scene.createEmbeddedDocuments('Region', [
@@ -103,9 +113,10 @@ const createRegion = (scene, data) =>
     },
   ])
 
-export const addStation = (ship, scene, { label, role }, { x, y }) =>
+export const addStation = (ship, scene, { label, role }, { x, y }, levels) =>
   createRegion(scene, {
     name: label,
+    levels,
     color: STATION_COLOURS[role],
     shapes: [{ type: 'circle', x, y, radius: 150 }],
     flags: { [SCOPE]: { ship: ship.uuid, station: role } },
@@ -114,6 +125,7 @@ export const addStation = (ship, scene, { label, role }, { x, y }) =>
 const addRoom = (ship, scene, item, { x, y }) =>
   createRegion(scene, {
     name: item.name,
+    levels: viewedLevels(),
     color: ROOM_COLOUR,
     shapes: [{ type: 'rectangle', x: x - 250, y: y - 150, width: 500, height: 300 }],
     flags: { [SCOPE]: { ship: ship.uuid, part: `item-${item.id}` } },
@@ -158,14 +170,16 @@ export class WildseaShipSchematic {
     const markers = []
     for (const ship of ships) {
       for (const part of shipParts(ship)) {
-        if (part.region) {
-          if (part.region.parent === canvas.scene)
-            markers.push(this.createRegionLabel(ship, part))
-          continue
-        }
-        const placement = partPosition(ship, part)
-        if (placement) markers.push(this.createCardMarker(ship, part, placement))
+        const position = partPosition(ship, part)
+        if (!position || !onViewedLevel(position.level)) continue
+        if (part.region) markers.push(this.createRegionLabel(ship, part))
+        else markers.push(this.createCardMarker(ship, part, placements(ship)[part.key]))
       }
+    }
+    for (const region of canvas.scene.regions) {
+      if (!region.getFlag(SCOPE, 'ladder')) continue
+      if (canvas.level && !region.includedInLevel(canvas.level.id)) continue
+      markers.push(this.createLadderMarker(region))
     }
     const rendered = await Promise.all(markers)
     if (renderId === this.#renderId) layer.replaceChildren(...rendered)
@@ -210,6 +224,34 @@ export class WildseaShipSchematic {
             deleteRegion(part.region),
           ),
         )
+    return marker
+  }
+
+  // Dragging the icon moves the ladder region with it
+  createLadderMarker(region) {
+    const { x, y, width, height } = region.bounds
+    const centre = { x: x + width / 2, y: y + height / 2 }
+    const placement = { ...centre, scale: region.getFlag(SCOPE, 'iconScale') ?? 1 }
+    const marker = createMarker('wildsea-ladder-marker', placement)
+    marker.dataset.tooltip = region.name
+    const icon = document.createElement('i')
+    icon.className = 'fas fa-stairs wildsea-hud-marker-header'
+    marker.append(icon)
+
+    if (game.user.isGM)
+      enableArranging(marker, icon, placement, ({ x: nx, y: ny, scale }) => {
+        const [dx, dy] = [nx - centre.x, ny - centre.y]
+        region.update({
+          shapes: region.shapes.map((shape) => {
+            const data = shape.toObject()
+            if ('points' in data)
+              data.points = data.points.map((v, i) => v + (i % 2 ? dy : dx))
+            else Object.assign(data, { x: data.x + dx, y: data.y + dy })
+            return data
+          }),
+          [`flags.${SCOPE}.iconScale`]: scale,
+        })
+      })
     return marker
   }
 
@@ -286,7 +328,11 @@ export class WildseaShipSchematic {
       if (existing) deleteRegion(existing)
       addRoom(ship, canvas.scene, item, position)
     } else {
-      placePart(ship, data.key, { scene: canvas.scene.id, ...position })
+      placePart(ship, data.key, {
+        scene: canvas.scene.id,
+        level: canvas.level?.id,
+        ...position,
+      })
     }
     return false
   }
