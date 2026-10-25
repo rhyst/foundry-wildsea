@@ -1,8 +1,7 @@
-import { placePart, shipParts } from './schematic.js'
+import { SCOPE } from './schematic.js'
 
 const { DialogV2 } = foundry.applications.api
-const { createCheckboxInput, createFormGroup, createSelectInput } =
-  foundry.applications.fields
+const { createFormGroup, createSelectInput } = foundry.applications.fields
 
 const SCENE = { width: 4000, height: 2400 }
 const UPLOAD_SOURCE = 'data'
@@ -33,9 +32,6 @@ const FRAME_HULLS = {
   spread: 'barge',
 }
 
-const escapeXml = (text) =>
-  String(text).replace(/[<>&"']/g, (c) => `&#${c.charCodeAt(0)};`)
-
 const designName = (ship, type) =>
   ship.itemTypes.design.find((design) => design.system.type === type)?.name
 
@@ -46,8 +42,7 @@ const defaultsFor = (ship) => {
     hull: FRAME_HULLS[frame] ?? 'longship',
     length: SIZE_LENGTHS[designName(ship, 'size')?.toLowerCase()] ?? 'medium',
     beam: frame === 'spread' ? 'wide' : 'standard',
-    palette: 'blueprint',
-    placeRooms: true,
+    palette: 'parchment',
   }
 }
 
@@ -69,70 +64,202 @@ const outline = ({ halfBeam, x }, inset = 1, steps = 80) => {
   return `M ${[...top, ...bottom].join(' L ')} Z`
 }
 
+// Deterministic per ship, so regenerating keeps the same details
+const seededRandom = (seed) => {
+  let h = 1779033703
+  for (const c of seed) h = Math.imul(h ^ c.charCodeAt(0), 3432918353)
+  return () => {
+    h = Math.imul(h ^ (h >>> 16), 2246822507)
+    h = Math.imul(h ^ (h >>> 13), 3266489909)
+    return ((h ^= h >>> 16) >>> 0) / 4294967296
+  }
+}
+
+const MAST_COUNTS = { short: 1, medium: 2, long: 3 }
+const WEAPON_TYPES = /weapon|armament/i
+
+const spread = (count, from, to) =>
+  Array.from({ length: count }, (_, i) => from + ((to - from) * (i + 0.5)) / count)
+
+const planking = ({ B, halfBeam, x }, random) => {
+  const lines = []
+  for (let y = -B / 2 + 40; y < B / 2; y += 40) {
+    lines.push(`<line x1="${x(0)}" y1="${y}" x2="${x(1)}" y2="${y}" />`)
+    for (let t = random() * 0.1; t < 1; t += 0.08 + random() * 0.06) {
+      if (halfBeam(t) > Math.abs(y))
+        lines.push(`<line x1="${x(t)}" y1="${y}" x2="${x(t)}" y2="${y + 40}" />`)
+    }
+  }
+  return lines.join('')
+}
+
+const masts = ({ B, halfBeam, x }, count) =>
+  spread(count, 0.3, 0.7)
+    .map((t) => {
+      const yard = halfBeam(t) * 0.8
+      return `<line x1="${x(t)}" y1="${-yard}" x2="${x(t)}" y2="${yard}" stroke-width="12" />
+      <circle cx="${x(t)}" cy="0" r="${B * 0.05}" stroke-width="6" />
+      <circle cx="${x(t)}" cy="0" r="${B * 0.02}" stroke-width="4" />`
+    })
+    .join('')
+
+const hatches = ({ B, x }, random, mastCount) => {
+  const avoid = spread(mastCount, 0.3, 0.7)
+  return spread(4, 0.15, 0.85)
+    .filter((t) => avoid.every((m) => Math.abs(m - t) > 0.08))
+    .filter(() => random() > 0.3)
+    .map((t) => {
+      const s = B * 0.07
+      const y = (random() - 0.5) * B * 0.25
+      return `<rect x="${x(t) - s / 2}" y="${y - s / 2}" width="${s}" height="${s}" />
+      <path d="M ${x(t) - s / 2} ${y - s / 2} L ${x(t) + s / 2} ${y + s / 2} M ${x(t) + s / 2} ${y - s / 2} L ${x(t) - s / 2} ${y + s / 2}" />`
+    })
+    .join('')
+}
+
+const gunports = ({ halfBeam, x }, count) =>
+  spread(count, 0.3, 0.75)
+    .flatMap((t) =>
+      [-1, 1].map((side) => {
+        const y = side * halfBeam(t)
+        return `<rect x="${x(t) - 25}" y="${y - 15}" width="50" height="30" />`
+      }),
+    )
+    .join('')
+
+const prow = ({ L, B, x }) => {
+  const tip = x(1) + L * 0.05
+  return `<path d="M ${x(1) - L * 0.03} ${-B * 0.05} L ${tip} 0 L ${x(1) - L * 0.03} ${B * 0.05} Z" />`
+}
+
+const engine = ({ L, B, halfBeam, x }) => {
+  const w = Math.max(halfBeam(0.08), B * 0.08)
+  return `<rect x="${x(0.04)}" y="${-w * 0.6}" width="${L * 0.08}" height="${w * 1.2}" />
+    <path d="M ${x(0.06)} ${-w * 0.6} V ${w * 0.6} M ${x(0.08)} ${-w * 0.6} V ${w * 0.6} M ${x(0.1)} ${-w * 0.6} V ${w * 0.6}" />`
+}
+
+const rudder = ({ L, x }) =>
+  `<rect x="${x(0) - L * 0.03}" y="-12" width="${L * 0.03}" height="24" />`
+
+const wake = ({ L, B, x }) =>
+  [-1, 1]
+    .map(
+      (side) =>
+        `<path d="M ${x(0) - L * 0.03} ${side * B * 0.05} Q ${x(0) - L * 0.12} ${side * B * 0.15} ${x(0) - L * 0.2} ${side * B * 0.35}" />`,
+    )
+    .join('')
+
+const dimensions = ({ L, B, x }) => {
+  const y = B / 2 + 160
+  const xb = x(1) + L * 0.05 + 120
+  const arrow = 'marker-start="url(#arrow)" marker-end="url(#arrow)"'
+  return `<line x1="${x(0)}" y1="${y}" x2="${x(1)}" y2="${y}" ${arrow} />
+    <line x1="${x(0)}" y1="${B / 2 + 40}" x2="${x(0)}" y2="${y + 40}" />
+    <line x1="${x(1)}" y1="${B / 2 + 40}" x2="${x(1)}" y2="${y + 40}" />
+    <line x1="${xb}" y1="${-B / 2}" x2="${xb}" y2="${B / 2}" ${arrow} />`
+}
+
+const compass = (cx, cy, r) =>
+  `<g transform="translate(${cx} ${cy})">
+    <circle r="${r}" fill="none" stroke-width="4" />
+    <circle r="${r * 0.8}" fill="none" stroke-width="2" stroke-dasharray="8 8" />
+    <path d="M 0 ${-r} L ${r * 0.15} 0 L 0 ${r} L ${-r * 0.15} 0 Z" />
+    <path d="M ${-r} 0 L 0 ${r * 0.15} L ${r} 0 L 0 ${-r * 0.15} Z" opacity="0.6" />
+    <text y="${-r - 20}" text-anchor="middle" font-size="50" stroke="none">N</text>
+  </g>`
+
 export const buildSchematicSvg = (ship, options) => {
   const { width, height } = SCENE
   const colours = PALETTES[options.palette]
   const geometry = hullGeometry(options)
-  const { L, halfBeam, x } = geometry
+  const { L, B, halfBeam, x } = geometry
+  const random = seededRandom(ship.id ?? ship.name)
+  const mastCount = MAST_COUNTS[options.length]
+  const weapons = ship.itemTypes.fitting?.filter((fitting) =>
+    WEAPON_TYPES.test(fitting.system.type),
+  ).length ?? 0
 
-  const ribs = Array.from({ length: 11 }, (_, i) => (i + 1) / 12)
+  const ribs = spread(12, 0, 1)
     .map((t) => {
       const h = halfBeam(t) * 0.92
       return `<line x1="${x(t)}" y1="${-h}" x2="${x(t)}" y2="${h}" />`
     })
     .join('')
 
-  const label = (text, tx, anchor) =>
-    text
-      ? `<text x="${tx}" y="${height * 0.2}" text-anchor="${anchor}" font-size="60">${escapeXml(text)}</text>`
-      : ''
-  const specs = ['size', 'frame', 'hull']
-    .map((type) => designName(ship, type))
-    .filter(Boolean)
-    .map(escapeXml)
-    .join(' · ')
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
   <defs>
     <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
       <path d="M 100 0 H 0 V 100" fill="none" stroke="${colours.grid}" stroke-width="2" />
     </pattern>
+    <pattern id="gridMajor" width="500" height="500" patternUnits="userSpaceOnUse">
+      <path d="M 500 0 H 0 V 500" fill="none" stroke="${colours.grid}" stroke-width="5" />
+    </pattern>
+    <linearGradient id="hullShade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${colours.ink}" stop-opacity="0.15" />
+      <stop offset="0.5" stop-color="${colours.ink}" stop-opacity="0" />
+      <stop offset="1" stop-color="${colours.ink}" stop-opacity="0.15" />
+    </linearGradient>
+    <clipPath id="hullClip"><path d="${outline(geometry)}" /></clipPath>
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="${colours.ink}" />
+    </marker>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="3" />
+      <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.08 0" />
+    </filter>
   </defs>
   <rect width="${width}" height="${height}" fill="${colours.ground}" />
   <rect width="${width}" height="${height}" fill="url(#grid)" />
-  <g transform="translate(${width / 2} ${height / 2})">
-    <path d="${outline(geometry)}" fill="${colours.hull}" stroke="${colours.ink}" stroke-width="10" />
-    <g stroke="${colours.ink}" stroke-width="3" opacity="0.5">${ribs}</g>
-    <path d="${outline(geometry, 0.85)}" fill="none" stroke="${colours.ink}" stroke-width="4" stroke-dasharray="30 20" />
-    <line x1="${-L / 2}" y1="0" x2="${L / 2}" y2="0" stroke="${colours.ink}" stroke-width="3" stroke-dasharray="60 30" opacity="0.6" />
+  <rect width="${width}" height="${height}" fill="url(#gridMajor)" />
+  <rect width="${width}" height="${height}" filter="url(#grain)" />
+  <g transform="translate(${width / 2} ${height / 2})" stroke="${colours.ink}" fill="none">
+    <g stroke-width="3" opacity="0.4" stroke-dasharray="20 15">${wake(geometry)}</g>
+    <g fill="${colours.hull}" stroke-width="6">${prow(geometry)}</g>
+    <path d="${outline(geometry)}" fill="${colours.hull}" />
+    <path d="${outline(geometry)}" fill="url(#hullShade)" />
+    <g clip-path="url(#hullClip)">
+      <g stroke-width="2" opacity="0.25">${planking(geometry, random)}</g>
+      <g stroke-width="3" opacity="0.45">${ribs}</g>
+      <g fill="${colours.hull}" stroke-width="4">${engine(geometry)}</g>
+    </g>
+    <path d="${outline(geometry, 0.92)}" stroke-width="4" />
+    <line x1="${x(0)}" y1="0" x2="${x(1)}" y2="0" stroke-width="3" stroke-dasharray="60 30" opacity="0.5" />
+    <g fill="${colours.hull}" stroke-width="4">${hatches(geometry, random, mastCount)}</g>
+    <g fill="${colours.hull}" stroke-width="4">${rudder(geometry)}</g>
+    <g fill="${colours.ground}" stroke-width="4">${gunports(geometry, weapons)}</g>
+    <g fill="${colours.hull}">${masts(geometry, mastCount)}</g>
+    <path d="${outline(geometry)}" stroke-width="12" />
+    <g stroke-width="3" opacity="0.7">${dimensions(geometry)}</g>
   </g>
-  <g fill="${colours.ink}" font-family="sans-serif" letter-spacing="4">
-    ${label(designName(ship, 'engine'), width / 2 - L / 2, 'start')}
-    ${label(designName(ship, 'bite'), width / 2 + L / 2, 'end')}
-    <text x="${width - 120}" y="${height - 200}" text-anchor="end" font-size="120">${escapeXml(ship.name.toUpperCase())}</text>
-    <text x="${width - 120}" y="${height - 110}" text-anchor="end" font-size="50" opacity="0.8">${specs}</text>
-  </g>
+  <g stroke="${colours.ink}" fill="${colours.ink}" opacity="0.8">${compass(260, 300, 140)}</g>
 </svg>`
 }
 
-// Room fittings spread evenly along the hull, in two rows when there are many
-const roomPositions = (ship, options, origin) => {
-  const rooms = shipParts(ship).filter((part) =>
-    /room/i.test(part.item?.system.type ?? ''),
-  )
-  const { halfBeam, x } = hullGeometry(options)
-  const rows = rooms.length > 4 ? 2 : 1
-  const perRow = Math.ceil(rooms.length / rows)
-  return rooms.map((part, i) => {
-    const row = Math.floor(i / perRow)
-    const t = 0.2 + (0.6 * ((i % perRow) + 0.5)) / perRow
-    const offset = rows === 1 ? 0 : (row === 0 ? -1 : 1) * halfBeam(t) * 0.45
-    return {
-      key: part.key,
-      x: Math.round(origin.x + SCENE.width / 2 + x(t)),
-      y: Math.round(origin.y + SCENE.height / 2 + offset),
-    }
+// Text kept as scene drawings so it can be edited, moved or deleted
+const textDrawings = (ship, options, origin) => {
+  const { width, height } = SCENE
+  const ink = PALETTES[options.palette].ink
+  const specs = ['size', 'frame', 'hull']
+    .map((type) => designName(ship, type))
+    .filter(Boolean)
+    .join(' · ')
+  const text = (content, x, y, w, h, fontSize, frame = false) => ({
+    shape: { type: 'r', width: w, height: h },
+    x: origin.x + x,
+    y: origin.y + y,
+    text: content,
+    fontSize,
+    textColor: ink,
+    fillType: CONST.DRAWING_FILL_TYPES.NONE,
+    strokeWidth: frame ? 5 : 0,
+    strokeColor: ink,
+    flags: { [SCOPE]: { generated: true } },
   })
+  return [
+    text(ship.name.toUpperCase(), width - 1300, height - 330, 1200, 170, 110, true),
+    specs && text(specs, width - 1300, height - 160, 1200, 90, 46, true),
+  ].filter(Boolean)
 }
 
 const uploadSvg = async (svg, name) => {
@@ -169,10 +296,6 @@ const promptOptions = (ship) => {
       select('length', LENGTHS),
       select('beam', BEAMS),
       select('palette', PALETTES),
-      createFormGroup({
-        label: game.i18n.localize('wildsea.GENERATOR.placeRooms'),
-        input: createCheckboxInput({ name: 'placeRooms', value: defaults.placeRooms }),
-      }).outerHTML,
     ].join(''),
     rejectClose: false,
   })
@@ -199,9 +322,13 @@ export const generateSchematic = async (ship, scene) => {
       { name: ship.name, background: { src: path } },
     ])
 
-  if (choices.placeRooms) {
-    const { sceneX, sceneY } = scene.dimensions
-    for (const { key, x, y } of roomPositions(ship, choices, { x: sceneX, y: sceneY }))
-      await placePart(ship, key, { scene: scene.id, x, y })
-  }
+  const { sceneX, sceneY } = scene.dimensions
+  const previous = scene.drawings
+    .filter((drawing) => drawing.getFlag(SCOPE, 'generated'))
+    .map((drawing) => drawing.id)
+  await scene.deleteEmbeddedDocuments('Drawing', previous)
+  await scene.createEmbeddedDocuments(
+    'Drawing',
+    textDrawings(ship, choices, { x: sceneX, y: sceneY }),
+  )
 }

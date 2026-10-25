@@ -10,7 +10,7 @@ import {
 const { renderTemplate } = foundry.applications.handlebars
 
 export const DRAG_TYPE = 'WildseaShipPart'
-const SCOPE = 'the-wildsea'
+export const SCOPE = 'the-wildsea'
 const MARKER_TEMPLATE = `${WILDSEA.root_path}/templates/schematic/marker.hbs`
 const LISTS = ['conditions', 'cargoPassengers', 'reputations']
 const ITEM_TYPES = ['design', 'fitting', 'undercrew']

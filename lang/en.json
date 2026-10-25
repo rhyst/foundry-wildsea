@@ -249,7 +249,6 @@
       "length": "Length",
       "beam": "Beam",
       "palette": "Style",
-      "placeRooms": "Place room fittings",
       "HULLS": { "longship": "Longship", "galleon": "Galleon", "barge": "Barge", "spindle": "Spindle" },
       "LENGTHS": { "short": "Short", "medium": "Medium", "long": "Long" },
       "BEAMS": { "narrow": "Narrow", "standard": "Standard", "wide": "Wide" },

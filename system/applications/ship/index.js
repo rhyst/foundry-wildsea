@@ -1,7 +1,23 @@
 import { WildseaShipSchematic } from './schematic.js'
 import { WildseaShipPartsPanel } from './parts-panel.js'
+import { SCOPE } from './schematic.js'
+
+// Generated schematic text is drawn plainly, without core's outline and shadow
+const plainGeneratedText = (Drawing) =>
+  class extends Drawing {
+    _getTextStyle() {
+      const style = super._getTextStyle()
+      if (this.document.getFlag(SCOPE, 'generated')) {
+        style.strokeThickness = 0
+        style.dropShadow = false
+      }
+      return style
+    }
+  }
 
 export const setup = () => {
+  CONFIG.Drawing.objectClass = plainGeneratedText(CONFIG.Drawing.objectClass)
+
   const schematic = new WildseaShipSchematic()
   game.wildsea.shipSchematic = schematic
 
