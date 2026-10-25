@@ -142,6 +142,18 @@ export class WildseaTrackDatabase extends Collection {
     game.settings.set('wildsea', 'activeTracks', newData)
   }
 
+  // placement is { scene, x, y }, or null to take the track off the map
+  placeTrack(id, placement) {
+    const tracks = this.getTrackData()
+    if (!tracks[id]) return
+    tracks[id].placement = placement
+
+    this.set(id, tracks[id])
+    game.wildsea.sceneTracks.render()
+
+    game.settings.set('wildsea', 'activeTracks', tracks)
+  }
+
   deleteTrack(id) {
     const tracks = this.getTrackData()
     delete tracks[id]
@@ -160,6 +172,7 @@ export class WildseaTrackDatabase extends Collection {
     // Redraw before the server round trip
     this.set(id, tracks[id])
     game.wildsea.trackPanel.render()
+    game.wildsea.sceneTracks.render()
 
     game.settings.set('wildsea', 'activeTracks', tracks)
   }
@@ -173,5 +186,6 @@ export class WildseaTrackDatabase extends Collection {
     if (game.wildsea.trackPanel?.rendered) {
       game.wildsea.trackPanel.render({ force: true })
     }
+    game.wildsea.sceneTracks?.render()
   }
 }

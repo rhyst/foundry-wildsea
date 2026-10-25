@@ -1,6 +1,7 @@
 import { clickModifiers } from '../../helpers.js'
 import WildseaTrack from './track.js'
 import SortableJS from '../../lib/sortable.complete.esm.js'
+import { DRAG_TYPE } from './scene.js'
 
 const { HandlebarsApplicationMixin } = foundry.applications.api
 
@@ -70,6 +71,12 @@ export class WildseaTrackPanel extends HandlebarsApplicationMixin(foundry.applic
         draggable: '.wildsea-track-row',
         dragClass: 'wildsea-drag-preview',
         ghostClass: 'wildsea-drag-placeholder',
+        // Lets a row be dropped onto the canvas to place it in the scene
+        setData: (dataTransfer, row) =>
+          dataTransfer.setData(
+            'text/plain',
+            JSON.stringify({ type: DRAG_TYPE, id: row.dataset.trackId }),
+          ),
         onEnd: (event) => {
           const id = event.item.dataset.trackId
           const newIndex = event.newDraggableIndex

@@ -1935,6 +1935,65 @@ h3 + .wildsea-section-body {
   visibility: hidden;
 }
 
+#wildsea-scene-tracks .wildsea-scene-track {
+  position: absolute;
+  transform: translate(-50%, -50%) scale(var(--wildsea-marker-scale, 1));
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  white-space: nowrap;
+  background: var(--wildsea-surface);
+  border: 2px solid var(--wildsea-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+#wildsea-scene-tracks .wildsea-scene-track.secret,
+#wildsea-scene-tracks .wildsea-scene-track.wildsea-track--hidden {
+  background: var(--wildsea-surface-alt);
+}
+
+.wildsea-scene-track-header {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.wildsea-scene-track-header.wildsea-draggable {
+  cursor: grab;
+}
+
+.wildsea-scene-track .wildsea-track-slots {
+  cursor: pointer;
+}
+
+.wildsea-scene-track-resize {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 0.6rem;
+  height: 0.6rem;
+  cursor: nwse-resize;
+  opacity: 0.5;
+  background: linear-gradient(
+    135deg,
+    transparent 0 40%,
+    var(--wildsea-text) 40% 50%,
+    transparent 50% 65%,
+    var(--wildsea-text) 65% 75%,
+    transparent 75% 90%,
+    var(--wildsea-text) 90%
+  );
+}
+
+.wildsea-scene-track:hover .wildsea-scene-track-resize {
+  opacity: 1;
+}
+
 .wildsea-track-row {
   padding: 0.5rem;
   border-radius: 0.25rem;

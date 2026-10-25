@@ -250,6 +250,7 @@
       "label": "Label",
       "open": "Open",
       "requiredFields": "Name and Track Groups are required fields.",
+      "removeFromScene": "Remove from scene",
       "secret": "Secret",
       "trackGroups": "Length",
       "trackGroupsHelpText": "Create breaks with ',' or '|'",
