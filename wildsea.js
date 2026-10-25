@@ -146,7 +146,7 @@ Hooks.on('getSceneControlButtons', (controls) => {
         icon: 'fas fa-ship',
         order: 2,
         button: true,
-        visible: game.user.isGM && !!sceneShip(canvas.scene),
+        visible: !!sceneShip(canvas.scene)?.isOwner,
         onChange: () => {
           const ship = sceneShip(canvas.scene)
           if (ship) WildseaShipPartsPanel.open(ship)

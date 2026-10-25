@@ -4,6 +4,7 @@ import {
   SECTIONS,
   STATION_ROLES,
   addStation,
+  canArrange,
   deleteRegion,
   openShipScene,
   partPosition,
@@ -73,6 +74,7 @@ export class WildseaShipPartsPanel extends HandlebarsApplicationMixin(
     }))
     return {
       isGM: game.user.isGM,
+      canArrange: canArrange(this.ship),
       sections: SECTIONS.map((section) => ({
         id: section,
         label: game.i18n.localize(`wildsea.SCHEMATIC.SECTIONS.${section}`),
@@ -145,7 +147,7 @@ export class WildseaShipPartsPanel extends HandlebarsApplicationMixin(
 
   static async _onDeleteStation(_event, target) {
     const part = this.partFor(target)
-    if (part?.region) await deleteRegion(part.region)
+    if (part?.region) await deleteRegion(this.ship, part.region)
   }
 
   partFor(target) {

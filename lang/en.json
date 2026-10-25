@@ -327,6 +327,7 @@
       "partsTitle": "{ship}: Ship Parts",
       "dragHint": "Drag a part onto the ship scene to place it.",
       "removeFromScene": "Remove from scene",
+      "noGM": "A Firefly needs to be online to change the ship's stations, rooms or ladder.",
       "partsButton": "Ship Parts",
       "SECTIONS": {
         "ship": "Ship",

@@ -123,7 +123,7 @@ export default class WildseaShipSheet extends WildseaActorSheet {
 
   static async _onOpenShipScene() {
     await openShipScene(this.actor)
-    if (game.user.isGM) WildseaShipPartsPanel.open(this.actor)
+    if (this.actor.isOwner) WildseaShipPartsPanel.open(this.actor)
   }
 
   static _onAddItem(event, target) {

@@ -1,6 +1,6 @@
 import { WildseaShipSchematic } from './schematic.js'
 import { WildseaShipPartsPanel } from './parts-panel.js'
-import { SCOPE } from './schematic.js'
+import { SCOPE, registerShipQueries } from './schematic.js'
 
 // Generated schematic text is drawn plainly, without core's outline and shadow
 const plainGeneratedText = (Drawing) =>
@@ -17,6 +17,7 @@ const plainGeneratedText = (Drawing) =>
 
 export const setup = () => {
   CONFIG.Drawing.objectClass = plainGeneratedText(CONFIG.Drawing.objectClass)
+  registerShipQueries()
 
   const schematic = new WildseaShipSchematic()
   game.wildsea.shipSchematic = schematic

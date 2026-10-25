@@ -6,7 +6,7 @@
   {{#each sections as |section|}}
   <h3 class="wildsea-cut-corners wildsea-bg-mid">
     {{section.label}}
-    {{#if (and @root.isGM (eq section.id "station"))}}
+    {{#if (and @root.canArrange (eq section.id "station"))}}
     <a class="wildsea-add-button" data-action="addStation" data-tooltip="{{localize "wildsea.STATIONS.add"}}"><i class="fas fa-plus"></i></a>
     {{/if}}
   </h3>
@@ -18,7 +18,7 @@
         {{#if part.here}}
         <a data-action="locatePart" data-tooltip="{{localize "wildsea.TRACKS.locate"}}"><i class="fas fa-location-dot"></i></a>
         {{/if}}
-        {{#if (and @root.isGM part.station)}}
+        {{#if (and @root.canArrange part.station)}}
         <a data-action="deleteStation" data-tooltip="{{localize "wildsea.delete"}}"><i class="fas fa-trash"></i></a>
         {{/if}}
       </span>
