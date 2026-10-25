@@ -49,9 +49,11 @@ export const placePart = (ship, key, placement) =>
     ? ship.setFlag(SCOPE, `schematic.${key}`, placement)
     : ship.unsetFlag(SCOPE, `schematic.${key}`)
 
+export const shipScene = (ship) => game.scenes.get(ship.getFlag(SCOPE, 'scene'))
+
 // Opens the ship's linked scene, creating it the first time
 export const openShipScene = async (ship) => {
-  let scene = game.scenes.get(ship.getFlag(SCOPE, 'scene'))
+  let scene = shipScene(ship)
   if (!scene) {
     if (!game.user.isGM)
       return ui.notifications.warn(
@@ -66,6 +68,7 @@ export const openShipScene = async (ship) => {
     await ship.setFlag(SCOPE, 'scene', scene.id)
   }
   await scene.view()
+  return scene
 }
 
 export class WildseaShipSchematic {

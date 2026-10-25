@@ -1,5 +1,13 @@
 import { WILDSEA } from '../../config.js'
-import { DRAG_TYPE, SECTIONS, placements, shipParts } from './schematic.js'
+import {
+  DRAG_TYPE,
+  SECTIONS,
+  openShipScene,
+  placements,
+  shipParts,
+  shipScene,
+} from './schematic.js'
+import { generateSchematic } from './generator.js'
 
 const { HandlebarsApplicationMixin, ApplicationV2 } = foundry.applications.api
 
@@ -33,6 +41,7 @@ export class WildseaShipPartsPanel extends HandlebarsApplicationMixin(
     window: { resizable: true },
     actions: {
       locatePart: WildseaShipPartsPanel._onLocatePart,
+      generateSchematic: WildseaShipPartsPanel._onGenerateSchematic,
     },
   }
 
@@ -55,6 +64,7 @@ export class WildseaShipPartsPanel extends HandlebarsApplicationMixin(
       here: placed[part.key]?.scene === canvas.scene?.id,
     }))
     return {
+      isGM: game.user.isGM,
       sections: SECTIONS.map((section) => ({
         label: game.i18n.localize(`wildsea.SCHEMATIC.SECTIONS.${section}`),
         parts: parts.filter((part) => part.section === section),
@@ -76,6 +86,11 @@ export class WildseaShipPartsPanel extends HandlebarsApplicationMixin(
         ),
       )
     }
+  }
+
+  static async _onGenerateSchematic() {
+    const scene = shipScene(this.ship) ?? (await openShipScene(this.ship))
+    if (scene) await generateSchematic(this.ship, scene)
   }
 
   static _onLocatePart(_event, target) {

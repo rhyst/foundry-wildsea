@@ -242,6 +242,19 @@
       "frost": "Frost",
       "flame": "Flame"
     },
+    "GENERATOR": {
+      "button": "Generate Schematic",
+      "title": "Generate Ship Schematic",
+      "hull": "Hull Shape",
+      "length": "Length",
+      "beam": "Beam",
+      "palette": "Style",
+      "placeRooms": "Place room fittings",
+      "HULLS": { "longship": "Longship", "galleon": "Galleon", "barge": "Barge", "spindle": "Spindle" },
+      "LENGTHS": { "short": "Short", "medium": "Medium", "long": "Long" },
+      "BEAMS": { "narrow": "Narrow", "standard": "Standard", "wide": "Wide" },
+      "PALETTES": { "blueprint": "Blueprint", "parchment": "Parchment" }
+    },
     "SCHEMATIC": {
       "openScene": "Ship Scene",
       "noScene": "This ship has no scene yet. Ask the Firefly to open it first.",
