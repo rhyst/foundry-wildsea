@@ -1,5 +1,16 @@
 # The Wildsea (Unofficial) - FoundryVTT
 
+## v0.5.0
+
+- Damage and Ship Damage buttons on conflict and disaster roll cards
+- Damage types, with resistances, immunities and weaknesses on aspects
+- Impact levels when applying damage
+- Place scene tracks on the map
+- Ship scenes: placeable ship parts, crew stations, rooms and furniture
+- Ship schematic generator with multiple decks
+- Journey tracker
+- Fix item details being cleared when editing other fields
+
 ## v0.4.1
 
 - Use system data models in place of template.json
