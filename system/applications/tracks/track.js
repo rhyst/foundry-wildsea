@@ -5,6 +5,7 @@ export default class WildseaTrack {
     this.value = data.value
     this.burn = data.burn
     this.visibility = data.visibility
+    this.placement = data.placement
     this.slotGroups = data.groups
       .split(/[,\|]/)
       .map((group) => parseInt(group) || 0)

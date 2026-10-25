@@ -2004,6 +2004,7 @@ h3 + .wildsea-section-body {
 }
 
 .wildsea-track-row .wildsea-track-label,
+.wildsea-track-row .wildsea-track-locate,
 .wildsea-track-row .wildsea-track-delete {
   color: var(--wildsea-text);
   line-height: 1rem;

@@ -248,6 +248,7 @@
       "fireflyOnly": "Firefly Only",
       "hidden": "Hidden",
       "label": "Label",
+      "locate": "Show on map",
       "open": "Open",
       "requiredFields": "Name and Track Groups are required fields.",
       "removeFromScene": "Remove from scene",

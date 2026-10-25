@@ -11,6 +11,9 @@ export const setup = () => {
   game.wildsea.trackDatabase.refresh()
 
   Hooks.on('renderHeadsUpDisplayContainer', () => game.wildsea.sceneTracks.render())
+  Hooks.on('canvasReady', () => {
+    if (game.wildsea.trackPanel.rendered) game.wildsea.trackPanel.render()
+  })
   Hooks.on('dropCanvasData', (_canvas, data) =>
     game.wildsea.sceneTracks.onDropCanvasData(data),
   )

@@ -37,6 +37,13 @@ export default class WildseaActor extends Actor {
         actorLink: true,
         disposition: CONST.TOKEN_DISPOSITIONS.FRIENDLY,
       }
+      if (data.type === 'ship') {
+        Object.assign(prototypeToken, {
+          displayBars: CONST.TOKEN_DISPLAY_MODES.OWNER,
+          bar1: { attribute: 'ratings.armour' },
+          bar2: { attribute: 'ratings.speed' },
+        })
+      }
       return this.updateSource({ prototypeToken })
     }
   }

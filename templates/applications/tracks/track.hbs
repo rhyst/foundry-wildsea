@@ -5,6 +5,11 @@
     {{{renderTrack track}}}
     {{/if}}
   </div>
+  {{#if (and track.placement (eq track.placement.scene @root.sceneId))}}
+  <a class="wildsea-track-locate" data-action="locateTrack" data-tooltip="{{localize "wildsea.TRACKS.locate"}}">
+    <i class="fas fa-location-dot"></i>
+  </a>
+  {{/if}}
   {{#if @root.options.editable}}
   <a class="wildsea-track-delete" data-action="deleteTrack">
     <i class="fas fa-trash"></i>

@@ -38,6 +38,7 @@ export class WildseaTrackPanel extends HandlebarsApplicationMixin(foundry.applic
       options: {
         editable: game.user.isGM,
       },
+      sceneId: canvas.scene?.id,
       tracks,
     }
   }
@@ -104,6 +105,8 @@ export class WildseaTrackPanel extends HandlebarsApplicationMixin(foundry.applic
         return this._onEditTrack(target)
       case 'deleteTrack':
         return this._onDeleteTrack(target)
+      case 'locateTrack':
+        return this._onLocateTrack(target)
       case 'adjustTrack':
         return this._onAdjustTrack(event, target, 1)
       default:
@@ -149,6 +152,13 @@ export class WildseaTrackPanel extends HandlebarsApplicationMixin(foundry.applic
     if (!id) return
 
     this.db.deleteTrack(id)
+  }
+
+  _onLocateTrack(target) {
+    const id = target.closest('.wildsea-track-row')?.dataset.trackId
+    const placement = this.db.get(id)?.placement
+    if (placement?.scene !== canvas.scene?.id) return
+    canvas.animatePan({ x: placement.x, y: placement.y })
   }
 
   _onAdjustTrack(event, target, amount) {
