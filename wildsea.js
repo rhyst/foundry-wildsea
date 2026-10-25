@@ -22,6 +22,7 @@ import { registerDataModels } from './system/data-models.js'
 
 import * as WildseaTracks from './system/applications/tracks/index.js'
 import * as WildseaShipSchematic from './system/applications/ship/index.js'
+import * as WildseaJourney from './system/applications/journey/index.js'
 import { sceneShip } from './system/applications/ship/schematic.js'
 import { WildseaShipPartsPanel } from './system/applications/ship/parts-panel.js'
 
@@ -38,6 +39,7 @@ Hooks.once('init', () => {
 
   WildseaTracks.setup()
   WildseaShipSchematic.setup()
+  WildseaJourney.setup()
 
   loadHandlebarsPartials()
   loadHandlebarsHelpers()
@@ -128,6 +130,15 @@ Hooks.on('getSceneControlButtons', (controls) => {
         onChange: async () => {
           await game.wildsea.trackPanel.toggle()
         },
+      },
+      journey: {
+        name: 'journey',
+        title: 'wildsea.JOURNEY.title',
+        icon: 'fas fa-route',
+        order: 3,
+        button: true,
+        visible: game.user.isGM,
+        onChange: () => game.wildsea.journeyPanel.toggle(),
       },
       shipParts: {
         name: 'shipParts',

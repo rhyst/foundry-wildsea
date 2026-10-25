@@ -33,4 +33,9 @@ export const setup = () => {
   Hooks.on('updateActor', (actor) => isShip(actor) && refresh())
   for (const hook of ['createItem', 'updateItem', 'deleteItem'])
     Hooks.on(hook, (item) => isShip(item.parent) && refresh())
+  // Station crew and region labels follow tokens and regions
+  for (const hook of ['createToken', 'updateToken', 'deleteToken'])
+    Hooks.on(hook, (token) => token.parent === canvas.scene && schematic.render())
+  for (const hook of ['createRegion', 'updateRegion', 'deleteRegion'])
+    Hooks.on(hook, (region) => region.parent === canvas.scene && refresh())
 }

@@ -2,14 +2,20 @@ import { WILDSEA } from '../../config.js'
 import {
   DRAG_TYPE,
   SECTIONS,
+  STATION_ROLES,
+  addStation,
+  deleteRegion,
   openShipScene,
-  placements,
+  partPosition,
   shipParts,
   shipScene,
 } from './schematic.js'
 import { generateSchematic } from './generator.js'
 
-const { HandlebarsApplicationMixin, ApplicationV2 } = foundry.applications.api
+const { HandlebarsApplicationMixin, ApplicationV2, DialogV2 } =
+  foundry.applications.api
+const { createFormGroup, createSelectInput, createTextInput } =
+  foundry.applications.fields
 
 export class WildseaShipPartsPanel extends HandlebarsApplicationMixin(
   ApplicationV2,
@@ -42,6 +48,8 @@ export class WildseaShipPartsPanel extends HandlebarsApplicationMixin(
     actions: {
       locatePart: WildseaShipPartsPanel._onLocatePart,
       generateSchematic: WildseaShipPartsPanel._onGenerateSchematic,
+      addStation: WildseaShipPartsPanel._onAddStation,
+      deleteStation: WildseaShipPartsPanel._onDeleteStation,
     },
   }
 
@@ -58,17 +66,18 @@ export class WildseaShipPartsPanel extends HandlebarsApplicationMixin(
   }
 
   async _prepareContext() {
-    const placed = placements(this.ship)
     const parts = shipParts(this.ship).map((part) => ({
       ...part,
-      here: placed[part.key]?.scene === canvas.scene?.id,
+      station: part.section === 'station',
+      here: !!partPosition(this.ship, part),
     }))
     return {
       isGM: game.user.isGM,
       sections: SECTIONS.map((section) => ({
+        id: section,
         label: game.i18n.localize(`wildsea.SCHEMATIC.SECTIONS.${section}`),
         parts: parts.filter((part) => part.section === section),
-      })).filter((section) => section.parts.length),
+      })).filter((section) => section.parts.length || section.id === 'station'),
     }
   }
 
@@ -93,10 +102,55 @@ export class WildseaShipPartsPanel extends HandlebarsApplicationMixin(
     if (scene) await generateSchematic(this.ship, scene)
   }
 
-  static _onLocatePart(_event, target) {
+  static async _onAddStation() {
+    const data = await DialogV2.input({
+      window: { title: game.i18n.localize('wildsea.STATIONS.add') },
+      content: [
+        createFormGroup({
+          label: game.i18n.localize('wildsea.STATIONS.name'),
+          input: createTextInput({ name: 'label', required: true }),
+        }).outerHTML,
+        createFormGroup({
+          label: game.i18n.localize('wildsea.STATIONS.role'),
+          input: createSelectInput({
+            name: 'role',
+            options: STATION_ROLES.map((role) => ({
+              value: role,
+              label: `wildsea.STATIONS.ROLES.${role}`,
+            })),
+            localize: true,
+          }),
+        }).outerHTML,
+      ].join(''),
+      rejectClose: false,
+    })
+    if (!data?.label?.trim()) return
+    const scene = shipScene(this.ship) ?? (await openShipScene(this.ship))
+    if (!scene) return
+    // Centre of the current view when on the ship's scene, otherwise the scene's centre
+    const { sceneX, sceneY, sceneWidth, sceneHeight } = scene.dimensions
+    const position =
+      canvas.scene === scene
+        ? canvas.stage.pivot
+        : { x: sceneX + sceneWidth / 2, y: sceneY + sceneHeight / 2 }
+    await addStation(this.ship, scene, { label: data.label.trim(), role: data.role }, {
+      x: Math.round(position.x),
+      y: Math.round(position.y),
+    })
+  }
+
+  static async _onDeleteStation(_event, target) {
+    const part = this.partFor(target)
+    if (part?.region) await deleteRegion(part.region)
+  }
+
+  partFor(target) {
     const key = target.closest('[data-part-key]').dataset.partKey
-    const placement = placements(this.ship)[key]
-    if (placement?.scene !== canvas.scene?.id) return
-    canvas.animatePan({ x: placement.x, y: placement.y })
+    return shipParts(this.ship).find((part) => part.key === key)
+  }
+
+  static _onLocatePart(_event, target) {
+    const position = partPosition(this.ship, this.partFor(target))
+    if (position) canvas.animatePan({ x: position.x, y: position.y })
   }
 }

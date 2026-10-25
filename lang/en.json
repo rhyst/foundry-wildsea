@@ -254,6 +254,68 @@
       "BEAMS": { "narrow": "Narrow", "standard": "Standard", "wide": "Wide" },
       "PALETTES": { "blueprint": "Blueprint", "parchment": "Parchment" }
     },
+    "JOURNEY": {
+      "title": "Journey",
+      "none": "No journey under way.",
+      "start": "Start Journey",
+      "end": "End Journey",
+      "endConfirm": "End the current journey and clear its tracks?",
+      "ship": "Ship",
+      "destination": "Destination",
+      "lengthHint": "Track lengths; set Pathfinding to 0 unless someone is charting.",
+      "nobody": "Nobody",
+      "someone": "The crew",
+      "firefly": "Firefly",
+      "weather": "Watch the Weather",
+      "threat": "Threat Roll",
+      "hasChart": "Have a chart",
+      "helmTaken": "{crew} at the helm.",
+      "watchTaken": "{crew} on watch.",
+      "arrivedTitle": "Arrival",
+      "arrived": "The progress track is full: the crew arrive at {destination}.",
+      "TRACKS": {
+        "progress": "Progress",
+        "risk": "Risk",
+        "pathfinding": "Pathfinding",
+        "riot": "Riot"
+      },
+      "HELM": {
+        "cutPath": { "name": "Cut a Path", "effect": "Mark 1 progress. On the watch roll you may choose to engage or steer clear easily." },
+        "forgeAhead": { "name": "Forge Ahead", "effect": "Mark 2 progress. On the watch roll the ship usually blunders into an encounter, or avoids it with some damage." },
+        "dropAnchor": { "name": "Drop Anchor", "effect": "No progress. Little risk of interruption; undercrew keep watch while the crew take a montage." }
+      },
+      "WATCH": {
+        "watchTheWaves": "Watch the Waves",
+        "makeDiscovery": "Make a Discovery",
+        "discoveryEffect": "Choose a chart and add a whisper, then interpret them together. Both are used up.",
+        "peace": { "name": "Peace", "1": "Montage", "2": "Meeting", "3": "Tall tale (gain a whisper)", "4": "Tree shanty", "5": "Undercrew issue", "6": "Reflection (heal a mire)" },
+        "order": { "name": "Order", "1": "Nearby ship", "2": "Outpost", "3": "Survivor needing rescue", "4": "Wreck or ruin", "5": "Cache of cargo or supplies", "6": "Conspiracy" },
+        "nature": { "name": "Nature", "1": "Weather", "2": "Natural feature", "3": "Wonder (heal a mire)", "4": "Horror", "5": "Unsettled landfall", "6": "True wilds" }
+      },
+      "WEATHER": {
+        "high": "Clear skies.",
+        "mid": "The current weather continues.",
+        "low": "A change for the worse: a storm, oppressive heat, or something stranger."
+      },
+      "THREAT": {
+        "high": "A danger-free opportunity.",
+        "mid": "Hazardous, with a useful payoff.",
+        "low": "Immediate danger, with little payoff."
+      }
+    },
+    "STATIONS": {
+      "add": "Add Station",
+      "name": "Name",
+      "role": "Role",
+      "empty": "Unoccupied",
+      "ROLES": {
+        "helm": "At the Helm",
+        "watch": "On Watch",
+        "engine": "Engine",
+        "charts": "Charts",
+        "other": "Other"
+      }
+    },
     "SCHEMATIC": {
       "openScene": "Ship Scene",
       "noScene": "This ship has no scene yet. Ask the Firefly to open it first.",
@@ -263,6 +325,7 @@
       "partsButton": "Ship Parts",
       "SECTIONS": {
         "ship": "Ship",
+        "station": "Stations",
         "design": "Designs",
         "fitting": "Fittings",
         "undercrew": "Undercrew"

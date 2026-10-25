@@ -1,0 +1,38 @@
+<section class="wildsea flexcol wildsea-gapped">
+  {{#if active}}
+  <h2 class="wildsea-cut-corners wildsea-bg-dark">{{#if destination}}{{destination}}{{else}}{{localize "wildsea.JOURNEY.title"}}{{/if}}</h2>
+  {{#if ship}}<p class="wildsea-text-muted">{{ship}}</p>{{/if}}
+
+  <div class="wildsea-journey-tracks">
+    {{#each tracks as |entry|}}
+    <span class="wildsea-schematic-label">{{localize (concat "wildsea.JOURNEY.TRACKS." entry.key)}}</span>
+    {{> "systems/the-wildsea/templates/shared/track.hbs" entry.track id=entry.key type="journey"}}
+    {{/each}}
+  </div>
+
+  <h3 class="wildsea-cut-corners wildsea-bg-mid">{{localize "wildsea.STATIONS.ROLES.helm"}}: {{#if helm}}{{helm}}{{else}}{{localize "wildsea.JOURNEY.nobody"}}{{/if}}</h3>
+  <div class="flexrow wildsea-gapped">
+    {{#each helmActions as |action|}}
+    <button type="button" data-action="helm" data-helm-action="{{action}}" data-tooltip="{{localize (concat "wildsea.JOURNEY.HELM." action ".effect")}}">{{localize (concat "wildsea.JOURNEY.HELM." action ".name")}}</button>
+    {{/each}}
+  </div>
+
+  <h3 class="wildsea-cut-corners wildsea-bg-mid">{{localize "wildsea.STATIONS.ROLES.watch"}}: {{#if watch}}{{watch}}{{else}}{{localize "wildsea.JOURNEY.nobody"}}{{/if}}</h3>
+  <div class="flexrow wildsea-gapped">
+    <button type="button" data-action="watchTheWaves">{{localize "wildsea.JOURNEY.WATCH.watchTheWaves"}}</button>
+    <button type="button" data-action="makeDiscovery">{{localize "wildsea.JOURNEY.WATCH.makeDiscovery"}}</button>
+  </div>
+
+  <h3 class="wildsea-cut-corners wildsea-bg-mid">{{localize "wildsea.JOURNEY.firefly"}}</h3>
+  <div class="flexrow wildsea-gapped">
+    <button type="button" data-action="weather">{{localize "wildsea.JOURNEY.weather"}}</button>
+    <button type="button" data-action="threat">{{localize "wildsea.JOURNEY.threat"}}</button>
+    <label class="flexrow"><input type="checkbox" name="hasChart" /> {{localize "wildsea.JOURNEY.hasChart"}}</label>
+  </div>
+
+  <button type="button" data-action="endJourney"><i class="fas fa-flag-checkered"></i> {{localize "wildsea.JOURNEY.end"}}</button>
+  {{else}}
+  <p>{{localize "wildsea.JOURNEY.none"}}</p>
+  <button type="button" data-action="startJourney"><i class="fas fa-route"></i> {{localize "wildsea.JOURNEY.start"}}</button>
+  {{/if}}
+</section>

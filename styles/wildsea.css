@@ -2048,11 +2048,29 @@ h3 + .wildsea-section-body {
   color: #bb434e;
 }
 
-.wildsea-hud-marker.wildsea-schematic-room {
-  min-width: 10rem;
-  min-height: 6rem;
-  border-style: dashed;
-  background: color-mix(in srgb, var(--wildsea-surface) 80%, transparent);
+.wildsea-schematic-crew {
+  font-weight: bold;
+}
+
+/* Region labels sit above the region's top edge so they never cover what is inside */
+.wildsea-hud-marker.wildsea-region-label {
+  transform: translate(-50%, calc(-100% - 0.4rem));
+}
+
+.wildsea-hud-marker.wildsea-station-label {
+  gap: 0;
+  padding: 0.2rem 0.6rem;
+}
+
+.wildsea-journey-tracks {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+}
+
+.wildsea-journey .window-content {
+  overflow: auto;
 }
 
 .wildsea-ship-parts-list {

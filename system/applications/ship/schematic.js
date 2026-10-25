@@ -14,33 +14,68 @@ export const SCOPE = 'the-wildsea'
 const MARKER_TEMPLATE = `${WILDSEA.root_path}/templates/schematic/marker.hbs`
 const LISTS = ['conditions', 'cargoPassengers', 'reputations']
 const ITEM_TYPES = ['design', 'fitting', 'undercrew']
+export const STATION_ROLES = ['helm', 'watch', 'engine', 'charts', 'other']
+const STATION_COLOURS = {
+  helm: '#c9a227',
+  watch: '#3d8fb8',
+  engine: '#b8553d',
+  charts: '#5e9e4f',
+  other: '#8a7fa6',
+}
+const ROOM_COLOUR = '#858778'
 
-// Every part of a ship that can be placed on a schematic, keyed for its placement flag
-export const shipParts = (ship) => [
-  ...['ratings', 'stakes', ...LISTS].map((key) => ({
-    key,
-    section: 'ship',
-    label: game.i18n.localize(`wildsea.${key}`),
-  })),
-  ...ITEM_TYPES.flatMap((type) =>
-    [...ship.itemTypes[type]]
-      .sort((a, b) => a.sort - b.sort)
-      .map((item) => ({
-        key: `item-${item.id}`,
-        section: type,
-        label: item.name,
-        item,
-      })),
-  ),
-]
-
-export const SECTIONS = ['ship', ...ITEM_TYPES]
+const isRoom = (item) => /room/i.test(item?.system.type ?? '')
 
 // The ship linked to a scene opened from its sheet
 export const sceneShip = (scene) => {
   const uuid = scene?.getFlag(SCOPE, 'ship')
   return uuid ? fromUuidSync(uuid) : null
 }
+
+export const shipScene = (ship) => game.scenes.get(ship.getFlag(SCOPE, 'scene'))
+
+// Regions on the ship's scene that belong to it: stations and room outlines
+const shipRegions = (ship) =>
+  shipScene(ship)?.regions.filter(
+    (region) => region.getFlag(SCOPE, 'ship') === ship.uuid,
+  ) ?? []
+
+export const stationRegions = (ship) =>
+  shipRegions(ship).filter((region) => region.getFlag(SCOPE, 'station'))
+
+const partRegion = (ship, key) =>
+  shipRegions(ship).find((region) => region.getFlag(SCOPE, 'part') === key)
+
+// Token names standing in every station with the given role
+export const crewAt = (ship, role) =>
+  stationRegions(ship)
+    .filter((region) => region.getFlag(SCOPE, 'station') === role)
+    .flatMap((region) => [...region.tokens].map((token) => token.name))
+
+// Every part of a ship that can go on its schematic
+export const shipParts = (ship) => [
+  ...['ratings', 'stakes', ...LISTS].map((key) => ({
+    key,
+    section: 'ship',
+    label: game.i18n.localize(`wildsea.${key}`),
+  })),
+  ...stationRegions(ship).map((region) => ({
+    key: `station-${region.id}`,
+    section: 'station',
+    label: region.name,
+    region,
+  })),
+  ...ITEM_TYPES.flatMap((type) =>
+    [...ship.itemTypes[type]]
+      .sort((a, b) => a.sort - b.sort)
+      .map((item) => {
+        const key = `item-${item.id}`
+        return { key, section: type, label: item.name, item, region: partRegion(ship, key) }
+      }),
+  ),
+]
+
+export const SECTIONS = ['ship', 'station', ...ITEM_TYPES]
 
 export const placements = (ship) => ship.getFlag(SCOPE, 'schematic') ?? {}
 
@@ -49,7 +84,43 @@ export const placePart = (ship, key, placement) =>
     ? ship.setFlag(SCOPE, `schematic.${key}`, placement)
     : ship.unsetFlag(SCOPE, `schematic.${key}`)
 
-export const shipScene = (ship) => game.scenes.get(ship.getFlag(SCOPE, 'scene'))
+// Where a part sits on a scene: its region's centre, or its card placement
+export const partPosition = (ship, part, scene = canvas.scene) => {
+  if (part.region) {
+    if (part.region.parent !== scene) return null
+    const { x, y, width, height } = part.region.bounds
+    return { x: x + width / 2, y: y + height / 2 }
+  }
+  const placement = placements(ship)[part.key]
+  return placement?.scene === scene?.id ? placement : null
+}
+
+const createRegion = (scene, data) =>
+  scene.createEmbeddedDocuments('Region', [
+    {
+      visibility: CONST.REGION_VISIBILITY.ALWAYS,
+      ...data,
+    },
+  ])
+
+export const addStation = (ship, scene, { label, role }, { x, y }) =>
+  createRegion(scene, {
+    name: label,
+    color: STATION_COLOURS[role],
+    shapes: [{ type: 'circle', x, y, radius: 150 }],
+    flags: { [SCOPE]: { ship: ship.uuid, station: role } },
+  })
+
+const addRoom = (ship, scene, item, { x, y }) =>
+  createRegion(scene, {
+    name: item.name,
+    color: ROOM_COLOUR,
+    shapes: [{ type: 'rectangle', x: x - 250, y: y - 150, width: 500, height: 300 }],
+    flags: { [SCOPE]: { ship: ship.uuid, part: `item-${item.id}` } },
+  })
+
+export const deleteRegion = (region) =>
+  region.parent.deleteEmbeddedDocuments('Region', [region.id])
 
 // Opens the ship's linked scene, creating it the first time
 export const openShipScene = async (ship) => {
@@ -86,30 +157,32 @@ export class WildseaShipSchematic {
     )
     const markers = []
     for (const ship of ships) {
-      const parts = Object.fromEntries(
-        shipParts(ship).map((part) => [part.key, part]),
-      )
-      for (const [key, placement] of Object.entries(placements(ship))) {
-        if (placement.scene !== canvas.scene.id || !parts[key]) continue
-        markers.push(this.createPartMarker(ship, parts[key], placement))
+      for (const part of shipParts(ship)) {
+        if (part.region) {
+          if (part.region.parent === canvas.scene)
+            markers.push(this.createRegionLabel(ship, part))
+          continue
+        }
+        const placement = partPosition(ship, part)
+        if (placement) markers.push(this.createCardMarker(ship, part, placement))
       }
     }
     const rendered = await Promise.all(markers)
     if (renderId === this.#renderId) layer.replaceChildren(...rendered)
   }
 
-  async createPartMarker(ship, part, placement) {
-    const room = /room/i.test(part.item?.system.type ?? '')
-    const marker = createMarker(
-      `wildsea-schematic-part ${room ? 'wildsea-schematic-room' : ''}`,
-      placement,
-    )
+  async renderMarker(ship, part, classes, position) {
+    const marker = createMarker(`wildsea-schematic-part ${classes}`, position)
     marker.innerHTML = await renderTemplate(
       MARKER_TEMPLATE,
       this.markerContext(ship, part),
     )
-
     if (ship.isOwner) this.activatePart(marker, ship)
+    return marker
+  }
+
+  async createCardMarker(ship, part, placement) {
+    const marker = await this.renderMarker(ship, part, '', placement)
     if (game.user.isGM) {
       const header = marker.querySelector('.wildsea-hud-marker-header')
       header.append(
@@ -121,6 +194,22 @@ export class WildseaShipSchematic {
         placePart(ship, part.key, updated),
       )
     }
+    return marker
+  }
+
+  // Sits on the region's top edge and follows it; the region itself is edited with core tools
+  async createRegionLabel(ship, part) {
+    const { x, y, width } = part.region.bounds
+    const classes = part.item ? 'wildsea-region-label' : 'wildsea-region-label wildsea-station-label'
+    const marker = await this.renderMarker(ship, part, classes, { x: x + width / 2, y })
+    if (game.user.isGM)
+      marker
+        .querySelector('.wildsea-hud-marker-header')
+        .append(
+          createRemoveButton('wildsea.SCHEMATIC.removeFromScene', () =>
+            deleteRegion(part.region),
+          ),
+        )
     return marker
   }
 
@@ -138,8 +227,14 @@ export class WildseaShipSchematic {
       )
     } else if (LISTS.includes(part.key)) {
       context.entries = ship.system[part.key]
-    } else {
+    } else if (part.item) {
       context.item = part.item
+    } else {
+      const role = part.region.getFlag(SCOPE, 'station')
+      context.station = {
+        role: game.i18n.localize(`wildsea.STATIONS.ROLES.${role}`),
+        crew: [...part.region.tokens].map((token) => token.name),
+      }
     }
     return context
   }
@@ -183,11 +278,16 @@ export class WildseaShipSchematic {
     if (data.type !== DRAG_TYPE || !game.user.isGM) return
     const ship = fromUuidSync(data.ship)
     if (!ship) return
-    placePart(ship, data.key, {
-      scene: canvas.scene.id,
-      x: Math.round(data.x),
-      y: Math.round(data.y),
-    })
+    const position = { x: Math.round(data.x), y: Math.round(data.y) }
+
+    const item = ship.items.get(data.key.replace('item-', ''))
+    if (isRoom(item) && canvas.scene === shipScene(ship)) {
+      const existing = partRegion(ship, data.key)
+      if (existing) deleteRegion(existing)
+      addRoom(ship, canvas.scene, item, position)
+    } else {
+      placePart(ship, data.key, { scene: canvas.scene.id, ...position })
+    }
     return false
   }
 }

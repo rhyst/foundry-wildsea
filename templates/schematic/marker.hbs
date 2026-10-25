@@ -11,6 +11,11 @@
 </div>
 {{/if}}
 
+{{#if station}}
+<span class="wildsea-schematic-type wildsea-text-muted">{{station.role}}</span>
+<span class="wildsea-schematic-crew">{{#if station.crew.length}}{{join station.crew ", "}}{{else}}{{localize "wildsea.STATIONS.empty"}}{{/if}}</span>
+{{/if}}
+
 {{#if (eq part.key "stakes")}}
 <span class="wildsea-schematic-stakes">{{stakes}}</span>
 {{/if}}
