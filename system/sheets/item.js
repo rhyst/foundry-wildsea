@@ -10,6 +10,9 @@ export default class WildseaItemSheet extends HandlebarsApplicationMixin(foundry
       width: 600,
       height: 400,
     },
+    window: {
+      resizable: true,
+    },
     form: {
       submitOnChange: true,
     },

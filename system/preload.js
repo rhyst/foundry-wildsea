@@ -1,4 +1,5 @@
 import { stakesText } from './enrichers.js'
+import { protectionText } from './damage.js'
 
 export const loadHandlebarsPartials = () => {
   const partials = [
@@ -73,6 +74,9 @@ export const loadHandlebarsHelpers = () => {
     return `<li class="box ${css_class}"><span class="dot" data-index=${index}"></span></li>`
   })
   Handlebars.registerHelper('stakesText', (stakes) => stakesText(stakes))
+  Handlebars.registerHelper('protectionSummary', (system) =>
+    protectionText(system),
+  )
   Handlebars.registerHelper('selectOptGroup', (values, options) => {
     const { label, selected } = options?.hash
     let html = `<optgroup label="${label}">`

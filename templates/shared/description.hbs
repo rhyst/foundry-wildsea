@@ -1,7 +1,7 @@
 <section class="wildsea-editor-section">
   <div class="wildsea-editor-frame {{#if short}}wildsea-editor-compact{{/if}}">
     {{#if editable}}
-    <prose-mirror name="{{target}}" toggled>{{{content}}}</prose-mirror>
+    <prose-mirror name="{{target}}" value="{{value}}" toggled>{{{content}}}</prose-mirror>
     {{else}}
     {{{content}}}
     {{/if}}

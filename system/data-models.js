@@ -1,3 +1,5 @@
+import { WILDSEA } from './config.js'
+
 const {
   ArrayField,
   BooleanField,
@@ -5,6 +7,7 @@ const {
   NumberField,
   ObjectField,
   SchemaField,
+  SetField,
   StringField,
 } = foundry.data.fields
 const { TypeDataModel } = foundry.abstract
@@ -121,9 +124,30 @@ export class HazardData extends TypeDataModel {
   }
 }
 
-export class AspectData extends TypeDataModel {
+const damageTypes = (label) =>
+  new SetField(
+    new StringField({
+      choices: Object.fromEntries(
+        WILDSEA.damageTypes.map((type) => [type, `wildsea.DAMAGE_TYPES.${type}`]),
+      ),
+    }),
+    { label },
+  )
+
+export class TemporaryTrackData extends TypeDataModel {
   static defineSchema() {
     return { ...details(), type: string(), track: track(8) }
+  }
+}
+
+export class AspectData extends TemporaryTrackData {
+  static defineSchema() {
+    return {
+      ...super.defineSchema(),
+      resistances: damageTypes('wildsea.DAMAGE.resistances'),
+      immunities: damageTypes('wildsea.DAMAGE.immunities'),
+      weaknesses: damageTypes('wildsea.DAMAGE.weaknesses'),
+    }
   }
 }
 
@@ -177,7 +201,7 @@ export const registerDataModels = () => {
     design: DesignData,
     fitting: FittingData,
     resource: ResourceData,
-    temporaryTrack: AspectData,
+    temporaryTrack: TemporaryTrackData,
     undercrew: UndercrewData,
   })
 }

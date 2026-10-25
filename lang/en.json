@@ -198,12 +198,49 @@
       "shipButton": "Ship Damage",
       "track": "Track",
       "ship": "Ship",
-      "amount": "Amount",
+      "amount": "Marks",
       "burn": "Burn",
       "noTracks": "{actor} has no tracks to mark",
       "noShips": "There are no ships to damage",
       "marked": "Marked {amount} on {target}",
-      "burned": "Burned {amount} on {target}"
+      "burned": "Burned {amount} on {target}",
+      "type": "Damage Type",
+      "impact": "Impact",
+      "IMPACTS": {
+        "low": "Low",
+        "normal": "Normal",
+        "high": "High",
+        "massive": "Massive"
+      },
+      "untyped": "Untyped",
+      "resistances": "Resistant to",
+      "immunities": "Immune to",
+      "weaknesses": "Weak to",
+      "protections": "Protections",
+      "COLUMNS": {
+        "resistances": "Resist",
+        "immunities": "Immune",
+        "weaknesses": "Weak"
+      },
+      "LEVELS": {
+        "-1": "Weak",
+        "1": "Resistant",
+        "2": "Immune"
+      }
+    },
+    "DAMAGE_TYPES": {
+      "blunt": "Blunt",
+      "keen": "Keen",
+      "spike": "Spike",
+      "hewing": "Hewing",
+      "serrated": "Serrated",
+      "toxin": "Toxin",
+      "acid": "Acid",
+      "blast": "Blast",
+      "volt": "Volt",
+      "salt": "Salt",
+      "frost": "Frost",
+      "flame": "Flame"
     },
     "TRACKS": {
       "addTrack": "Add Track",

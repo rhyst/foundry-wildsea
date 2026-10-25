@@ -7,6 +7,9 @@
     <small class="wildsea-text-muted">{{system.type}}</small>
   </h3>
   {{> "systems/the-wildsea/templates/shared/track.hbs" system.track id=id type=type}}
+  {{#with (protectionSummary system) as |summary|}}
+  <p class="wildsea-protection-line wildsea-text-muted">{{summary}}</p>
+  {{/with}}
   <div class="wildsea-detail-drawer {{#if system.collapsed}}hidden{{/if}}">
     {{{system.enrichedDetails}}}
   </div>

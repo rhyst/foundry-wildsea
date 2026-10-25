@@ -12,8 +12,38 @@
     </div>
   </div>
 
+  {{#if protections}}
+  <section class="wildsea-protections">
+    <h3 class="wildsea-cut-corners wildsea-bg-mid" data-action="toggleProtections">
+      <i class="wildsea-expander fas fa-caret-{{#if protectionsOpen}}down{{else}}left{{/if}}"></i>
+      {{localize "wildsea.DAMAGE.protections"}}
+      <small>{{#with (protectionSummary system) as |summary|}}{{summary}}{{else}}{{localize "wildsea.none"}}{{/with}}</small>
+    </h3>
+    {{#if protectionsOpen}}
+    <table>
+      <tbody>
+        <tr class="wildsea-protection-columns">
+          <td></td>
+          {{#each protectionKeys as |key|}}
+          <th>{{localize (concat "wildsea.DAMAGE.COLUMNS." key)}}</th>
+          {{/each}}
+        </tr>
+        {{#each protections as |row|}}
+        <tr>
+          <td>{{localize (concat "wildsea.DAMAGE_TYPES." row.type)}}</td>
+          {{#each row.cells as |cell|}}
+          <td><input type="checkbox" data-protection="{{cell.key}}" data-damage-type="{{row.type}}" {{checked cell.checked}} {{disabled (not @root.editable)}} /></td>
+          {{/each}}
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    {{/if}}
+  </section>
+  {{/if}}
+
   <div id="body">
     <h3 class="wildsea-cut-corners wildsea-bg-mid">{{localize "wildsea.details"}}</h3>
-    {{> "systems/the-wildsea/templates/shared/description.hbs" content=system.enrichedDetails target="system.details"}}
+    {{> "systems/the-wildsea/templates/shared/description.hbs" content=system.enrichedDetails value=system.details target="system.details"}}
   </div>
 </div>

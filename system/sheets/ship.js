@@ -212,7 +212,11 @@ export default class WildseaShipSheet extends WildseaActorSheet {
       rolls: [roll],
       sound: CONFIG.sounds.dice,
       flags: {
-        wildsea: { outcome: outcome.resultText, actor: this.actor.uuid },
+        wildsea: {
+          outcome: outcome.resultText,
+          actor: this.actor.uuid,
+          rating,
+        },
       },
     }
     ChatMessage.create(chatData)

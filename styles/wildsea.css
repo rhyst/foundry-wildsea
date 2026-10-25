@@ -692,7 +692,8 @@ body.theme-dark .wildsea ul.wildsea-track li {
   text-align: left;
   font-size: 1rem;
   line-height: 1rem;
-  border-bottom: 0.5rem solid #f9f9f9;
+  border-bottom: 0.5rem solid transparent;
+  background-clip: padding-box;
 }
 
 .wildsea table thead th {
@@ -789,7 +790,8 @@ body.theme-dark .wildsea ul.wildsea-track li {
 
 /* ---------- Sheet columns ---------- */
 
-.actor-sheet .window-content {
+.actor-sheet .window-content,
+.item-sheet .window-content {
   overflow: auto;
 }
 
@@ -1173,6 +1175,39 @@ h3 + .wildsea-section-body {
   border: none;
   box-shadow: none;
   margin-bottom: 0.25rem;
+}
+
+.wildsea-protections h3 {
+  cursor: pointer;
+}
+
+.wildsea-protections .wildsea-expander {
+  float: right;
+  margin-right: 0.75rem;
+}
+
+.wildsea-protections table {
+  width: 100%;
+  margin: 0 0 0.5rem;
+}
+
+.wildsea-protections th,
+.wildsea-protections td {
+  padding: 0.1rem 0.5rem;
+  text-align: center;
+}
+
+.wildsea-protections td:first-child {
+  text-align: left;
+}
+
+.wildsea-protections .wildsea-protection-columns th {
+  padding: 0.35rem 0.5rem;
+  font-weight: bold;
+}
+
+.wildsea-aspect-card .wildsea-protection-line {
+  margin: 0 0.5rem 0.5rem;
 }
 
 .wildsea-damage-buttons {

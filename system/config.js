@@ -29,6 +29,24 @@ WILDSEA.languages = [
   'signalling',
   'highvin',
 ]
+WILDSEA.damageTypes = [
+  'blunt',
+  'keen',
+  'spike',
+  'hewing',
+  'serrated',
+  'toxin',
+  'acid',
+  'blast',
+  'volt',
+  'salt',
+  'frost',
+  'flame',
+]
+// Protection steps net per damage type: two resistances make an immunity
+WILDSEA.protectionSteps = { weaknesses: -1, resistances: 1, immunities: 2 }
+// Marks added by impact; massive fills the track
+WILDSEA.impacts = { low: -1, normal: 0, high: 1, massive: null }
 WILDSEA.milestoneSubtypes = ['major', 'minor']
 WILDSEA.resourceTypes = ['salvage', 'specimen', 'whisper', 'chart']
 WILDSEA.shipRatings = ['armour', 'seals', 'speed', 'saws', 'stealth', 'tilt']
