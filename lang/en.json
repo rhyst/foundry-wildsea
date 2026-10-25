@@ -242,6 +242,20 @@
       "frost": "Frost",
       "flame": "Flame"
     },
+    "SCHEMATIC": {
+      "openScene": "Ship Scene",
+      "noScene": "This ship has no scene yet. Ask the Firefly to open it first.",
+      "partsTitle": "{ship}: Ship Parts",
+      "dragHint": "Drag a part onto the ship scene to place it.",
+      "removeFromScene": "Remove from scene",
+      "partsButton": "Ship Parts",
+      "SECTIONS": {
+        "ship": "Ship",
+        "design": "Designs",
+        "fitting": "Fittings",
+        "undercrew": "Undercrew"
+      }
+    },
     "TRACKS": {
       "addTrack": "Add Track",
       "editTrack": "Edit Track",

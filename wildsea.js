@@ -21,6 +21,9 @@ import { runMigrations } from './system/migrations.js'
 import { registerDataModels } from './system/data-models.js'
 
 import * as WildseaTracks from './system/applications/tracks/index.js'
+import * as WildseaShipSchematic from './system/applications/ship/index.js'
+import { sceneShip } from './system/applications/ship/schematic.js'
+import { WildseaShipPartsPanel } from './system/applications/ship/parts-panel.js'
 
 Hooks.once('init', () => {
   console.log('wildsea | Initializing')
@@ -34,6 +37,7 @@ Hooks.once('init', () => {
   game.wildsea = {}
 
   WildseaTracks.setup()
+  WildseaShipSchematic.setup()
 
   loadHandlebarsPartials()
   loadHandlebarsHelpers()
@@ -123,6 +127,18 @@ Hooks.on('getSceneControlButtons', (controls) => {
         button: true,
         onChange: async () => {
           await game.wildsea.trackPanel.toggle()
+        },
+      },
+      shipParts: {
+        name: 'shipParts',
+        title: 'wildsea.SCHEMATIC.partsButton',
+        icon: 'fas fa-ship',
+        order: 2,
+        button: true,
+        visible: game.user.isGM && !!sceneShip(canvas.scene),
+        onChange: () => {
+          const ship = sceneShip(canvas.scene)
+          if (ship) WildseaShipPartsPanel.open(ship)
         },
       },
     },

@@ -546,6 +546,19 @@ body.theme-dark .wildsea ul.wildsea-track li {
   left: 0.25rem;
 }
 
+.wildsea .wildsea-ship-parts-list li::before,
+.wildsea .wildsea-schematic-list li::before {
+  content: none;
+}
+
+.wildsea .wildsea-ship-parts-list li {
+  padding: 0.5rem;
+}
+
+.wildsea .wildsea-schematic-list li {
+  padding: 0 0 0.25rem;
+}
+
 /* Context menu */
 .wildsea #context-menu {
   font-family: "Teko", sans-serif;
@@ -791,7 +804,8 @@ body.theme-dark .wildsea ul.wildsea-track li {
 /* ---------- Sheet columns ---------- */
 
 .actor-sheet .window-content,
-.item-sheet .window-content {
+.item-sheet .window-content,
+.wildsea-ship-parts .window-content {
   overflow: auto;
 }
 
@@ -1935,7 +1949,7 @@ h3 + .wildsea-section-body {
   visibility: hidden;
 }
 
-#wildsea-scene-tracks .wildsea-scene-track {
+.wildsea-hud-marker {
   position: absolute;
   transform: translate(-50%, -50%) scale(var(--wildsea-marker-scale, 1));
   pointer-events: auto;
@@ -1952,26 +1966,27 @@ h3 + .wildsea-section-body {
   overflow: hidden;
 }
 
-#wildsea-scene-tracks .wildsea-scene-track.secret,
-#wildsea-scene-tracks .wildsea-scene-track.wildsea-track--hidden {
+.wildsea-hud-marker.secret,
+.wildsea-hud-marker.wildsea-track--hidden {
+  display: flex;
   background: var(--wildsea-surface-alt);
 }
 
-.wildsea-scene-track-header {
+.wildsea-hud-marker-header {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
-.wildsea-scene-track-header.wildsea-draggable {
+.wildsea-hud-marker-header.wildsea-draggable {
   cursor: grab;
 }
 
-.wildsea-scene-track .wildsea-track-slots {
+.wildsea-hud-marker .wildsea-track-slots {
   cursor: pointer;
 }
 
-.wildsea-scene-track-resize {
+.wildsea-hud-marker-resize {
   position: absolute;
   right: 0;
   bottom: 0;
@@ -1990,8 +2005,69 @@ h3 + .wildsea-section-body {
   );
 }
 
-.wildsea-scene-track:hover .wildsea-scene-track-resize {
+.wildsea-hud-marker:hover .wildsea-hud-marker-resize {
   opacity: 1;
+}
+
+.wildsea-schematic-title {
+  font-family: "Teko", sans-serif;
+  font-size: 1.2rem;
+  line-height: 1.2rem;
+}
+
+.wildsea-schematic-ratings {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 0.2rem 0.5rem;
+}
+
+.wildsea-schematic-label {
+  font-family: "Teko", sans-serif;
+  text-transform: uppercase;
+}
+
+.wildsea-schematic-stakes {
+  font-size: 1.5rem;
+}
+
+.wildsea-schematic-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  white-space: normal;
+  max-width: 16rem;
+}
+
+.wildsea-schematic-damaged {
+  opacity: 0.4;
+}
+
+.wildsea-schematic-damaged.active {
+  opacity: 1;
+  color: #bb434e;
+}
+
+.wildsea-hud-marker.wildsea-schematic-room {
+  min-width: 10rem;
+  min-height: 6rem;
+  border-style: dashed;
+  background: color-mix(in srgb, var(--wildsea-surface) 80%, transparent);
+}
+
+.wildsea-ship-parts-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.wildsea-ship-parts-list li {
+  display: flex;
+  justify-content: space-between;
+  cursor: grab;
 }
 
 .wildsea-track-row {

@@ -1,0 +1,43 @@
+<div class="wildsea-hud-marker-header">
+  <span class="wildsea-schematic-title">{{title}}</span>
+</div>
+
+{{#if ratings}}
+<div class="wildsea-schematic-ratings">
+  {{#each ratings as |entry|}}
+  <span class="wildsea-schematic-label">{{localize (concat "wildsea." entry.rating)}}</span>
+  {{> "systems/the-wildsea/templates/shared/track.hbs" entry.track id=entry.rating type="rating"}}
+  {{/each}}
+</div>
+{{/if}}
+
+{{#if (eq part.key "stakes")}}
+<span class="wildsea-schematic-stakes">{{stakes}}</span>
+{{/if}}
+
+{{#if entries}}
+<ul class="wildsea-schematic-list">
+  {{#each entries as |entry|}}
+  <li>
+    <span>{{entry.text}}</span>
+    {{#if entry.track}}
+    {{> "systems/the-wildsea/templates/shared/track.hbs" entry.track id=entry.id type="reputations"}}
+    {{/if}}
+  </li>
+  {{/each}}
+</ul>
+{{/if}}
+
+{{#if item}}
+<span class="wildsea-schematic-type wildsea-text-muted">
+  {{item.system.type}}{{#if item.system.stakes}} &middot; {{stakesText item.system.stakes}}{{/if}}
+</span>
+{{#if item.system.track}}
+{{> "systems/the-wildsea/templates/shared/track.hbs" item.system.track id=item.id type=item.type}}
+{{/if}}
+{{#if (eq item.type "fitting")}}
+<a class="wildsea-schematic-damaged {{#if item.system.damaged}}active{{/if}}" data-toggle-damaged="{{item.id}}">
+  <i class="fas fa-hammer"></i> {{localize "wildsea.damaged"}}
+</a>
+{{/if}}
+{{/if}}

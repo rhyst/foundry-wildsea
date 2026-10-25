@@ -3,6 +3,8 @@ import { renderDialog } from '../dialog.js'
 import { clamp, clickModifiers, enrich, markTrack } from '../helpers.js'
 import WildseaActorSheet from './actor.js'
 import * as Dice from '../dice.js'
+import { openShipScene } from '../applications/ship/schematic.js'
+import { WildseaShipPartsPanel } from '../applications/ship/parts-panel.js'
 
 const { renderTemplate } = foundry.applications.handlebars
 
@@ -17,6 +19,7 @@ export default class WildseaShipSheet extends WildseaActorSheet {
       addItem: WildseaShipSheet._onAddItem,
       ratingRoll: WildseaShipSheet._onRatingRoll,
       toggleFittingDamaged: WildseaShipSheet._onToggleFittingDamaged,
+      openShipScene: WildseaShipSheet._onOpenShipScene,
     },
   }
 
@@ -105,6 +108,22 @@ export default class WildseaShipSheet extends WildseaActorSheet {
         },
       },
     })
+  }
+
+  _getFrameButtons(options) {
+    return [
+      ...super._getFrameButtons(options),
+      {
+        icon: 'fa-solid fa-map',
+        label: 'wildsea.SCHEMATIC.openScene',
+        action: 'openShipScene',
+      },
+    ]
+  }
+
+  static async _onOpenShipScene() {
+    await openShipScene(this.actor)
+    if (game.user.isGM) WildseaShipPartsPanel.open(this.actor)
   }
 
   static _onAddItem(event, target) {
