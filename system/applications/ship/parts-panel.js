@@ -12,6 +12,7 @@ import {
   shipScene,
 } from './schematic.js'
 import { generateSchematic } from './generator.js'
+import { addFurniture } from './furniture.js'
 
 const { HandlebarsApplicationMixin, ApplicationV2, DialogV2 } =
   foundry.applications.api
@@ -50,6 +51,7 @@ export class WildseaShipPartsPanel extends HandlebarsApplicationMixin(
       locatePart: WildseaShipPartsPanel._onLocatePart,
       generateSchematic: WildseaShipPartsPanel._onGenerateSchematic,
       addStation: WildseaShipPartsPanel._onAddStation,
+      addFurniture: WildseaShipPartsPanel._onAddFurniture,
       deleteStation: WildseaShipPartsPanel._onDeleteStation,
     },
   }
@@ -143,6 +145,10 @@ export class WildseaShipPartsPanel extends HandlebarsApplicationMixin(
       { x: Math.round(position.x), y: Math.round(position.y) },
       level ? [level] : [],
     )
+  }
+
+  static _onAddFurniture() {
+    return addFurniture(this.ship)
   }
 
   static async _onDeleteStation(_event, target) {

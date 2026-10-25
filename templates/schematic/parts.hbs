@@ -2,6 +2,9 @@
   {{#if isGM}}
   <button type="button" data-action="generateSchematic"><i class="fas fa-compass-drafting"></i> {{localize "wildsea.GENERATOR.button"}}</button>
   {{/if}}
+  {{#if canArrange}}
+  <button type="button" data-action="addFurniture"><i class="fas fa-couch"></i> {{localize "wildsea.FURNITURE.add"}}</button>
+  {{/if}}
   <p class="wildsea-text-muted">{{localize "wildsea.SCHEMATIC.dragHint"}}</p>
   {{#each sections as |section|}}
   <h3 class="wildsea-cut-corners wildsea-bg-mid">
