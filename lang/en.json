@@ -242,12 +242,6 @@
       "frost": "Frost",
       "flame": "Flame"
     },
-    "FURNITURE": {
-      "add": "Add Furniture",
-      "noPermission": "Adding furniture needs the Create Drawings permission; ask your Firefly to enable it in Configure Permissions.",
-      "stretch": "Stretch image to fit",
-      "stretchHint": "Scale the fill image to the drawing's size instead of tiling it."
-    },
     "GENERATOR": {
       "button": "Generate Schematic",
       "title": "Generate Ship Schematic",

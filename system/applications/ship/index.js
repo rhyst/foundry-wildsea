@@ -1,9 +1,8 @@
 import { WildseaShipSchematic } from './schematic.js'
 import { WildseaShipPartsPanel } from './parts-panel.js'
 import { SCOPE, registerShipQueries } from './schematic.js'
-import { STRETCH_FLAG, addStretchOption } from './furniture.js'
 
-const wildseaDrawing = (Drawing) =>
+const plainGeneratedText = (Drawing) =>
   class extends Drawing {
     // Generated schematic text is drawn plainly, without core's outline and shadow
     _getTextStyle() {
@@ -14,23 +13,10 @@ const wildseaDrawing = (Drawing) =>
       }
       return style
     }
-
-    // Core tiles a drawing's image; stretched drawings scale it to the shape instead
-    _getFillStyle() {
-      const style = super._getFillStyle()
-      const { width, height } = this.document.shape
-      if (style.texture && this.document.getFlag(SCOPE, STRETCH_FLAG))
-        style.matrix = new PIXI.Matrix().scale(
-          width / style.texture.width,
-          height / style.texture.height,
-        )
-      return style
-    }
   }
 
 export const setup = () => {
-  CONFIG.Drawing.objectClass = wildseaDrawing(CONFIG.Drawing.objectClass)
-  Hooks.on('renderDrawingConfig', addStretchOption)
+  CONFIG.Drawing.objectClass = plainGeneratedText(CONFIG.Drawing.objectClass)
   registerShipQueries()
 
   const schematic = new WildseaShipSchematic()
