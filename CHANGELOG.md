@@ -1,5 +1,9 @@
 # The Wildsea (Unofficial) - FoundryVTT
 
+## v0.5.1
+
+- Remove furniture from ship scenes; use the Tile Generator module instead
+
 ## v0.5.0
 
 - Damage and Ship Damage buttons on conflict and disaster roll cards
